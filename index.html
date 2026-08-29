@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Venon Zeiterfassung – V1.0</title>
+<title>VENON Zeiterfassung – V1.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&family=Titillium+Web:wght@400;600&display=swap" rel="stylesheet">
@@ -68,7 +68,11 @@
   .qr-wrap img{width:180px;height:180px;display:block;}
   .secret{font-family:monospace;font-size:.75rem;word-break:break-all;color:var(--text-dim);background:var(--bg-input);padding:8px;border-radius:6px;margin-top:8px;}
   .hidden{display:none !important;}
-  .status{font-size:.7rem;color:var(--text-dim);margin-top:24px;border-top:1px solid var(--border);padding-top:12px;word-break:break-all;}
+  .status{font-size:.7rem;color:var(--text-dim);margin-top:24px;padding-top:12px;word-break:break-all;min-height:0;}
+  .footer-logo{display:flex;justify-content:center;margin-top:28px;padding-top:16px;border-top:1px solid var(--border);}
+  .footer-logo svg{height:18px;width:auto;opacity:.6;}
+  .forgot-link{background:none;border:none;color:var(--text-dim);font-size:.8rem;text-decoration:underline;cursor:pointer;padding:0;margin-top:10px;font-family:inherit;}
+  .forgot-link:hover{color:var(--accent);}
 
   /* App shell */
   .app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
@@ -97,7 +101,7 @@
 
 <!-- ==================== AUTH CARD ==================== -->
 <div class="card" id="auth-card">
-  <h1>Venon Zeiterfassung</h1>
+  <h1>VENON Zeiterfassung</h1>
   <div class="version">V1.0</div>
 
   <div id="auth-section">
@@ -110,7 +114,25 @@
     <label for="password">Passwort</label>
     <input type="password" id="password" autocomplete="current-password">
     <button id="btn-submit" class="block" type="button">Einloggen</button>
+    <button id="btn-forgot" class="forgot-link" type="button">Passwort vergessen?</button>
     <div id="auth-msg" class="msg"></div>
+  </div>
+
+  <div id="forgot-section" class="hidden">
+    <p>Gib deine E-Mail ein, du erhältst einen Link zum Zurücksetzen.</p>
+    <label for="forgot-email">E-Mail</label>
+    <input type="email" id="forgot-email" autocomplete="email">
+    <button id="btn-send-reset" class="block" type="button">Link senden</button>
+    <button id="btn-forgot-back" class="secondary block" type="button">Zurück zum Login</button>
+    <div id="forgot-msg" class="msg"></div>
+  </div>
+
+  <div id="reset-password-section" class="hidden">
+    <p>Neues Passwort setzen:</p>
+    <label for="new-password">Neues Passwort</label>
+    <input type="password" id="new-password" autocomplete="new-password">
+    <button id="btn-set-new-password" class="block" type="button">Passwort speichern</button>
+    <div id="reset-password-msg" class="msg"></div>
   </div>
 
   <div id="mfa-challenge-section" class="hidden">
@@ -131,14 +153,35 @@
     <div id="mfa-enroll-msg" class="msg"></div>
   </div>
 
-  <div class="status" id="debug-status">Verbinde mit Supabase…</div>
+  <div class="status hidden" id="debug-status"></div>
+  <div class="footer-logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 682.72 149.5">
+      <g id="Text">
+        <path d="M55.77,93.74l-7.11-16.86-3.38,16.86h-6.68l6.98-34.81h6.71l-3.12,15.55,13.37-15.55h8.34l-15.5,16.86,8.63,17.95h-8.24Z" fill="#fff"/>
+        <path d="M112.31,93.74l-5.16-20.77-1.04-4.47-2.9,14.43-2.13,10.81h-5.94l6.98-34.81h7.7l5.3,20.91.86,4.07,3.06-15.36,1.97-9.62h5.99l-6.98,34.81h-7.71Z" fill="#fff"/>
+        <path d="M170.45,65.32l-7.86,16.19h9.11l-1.25-16.19ZM172.68,93.74l-.56-6.87h-12.14l-3.33,6.87h-6.82l17.28-34.81h9.16l3.33,34.81h-6.93,0Z" fill="#fff"/>
+        <path d="M237.11,81.46c-.44,2.22-1.09,4.14-1.94,5.77s-1.91,2.96-3.17,4.02c-1.26,1.05-2.73,1.84-4.39,2.34-1.67.5-3.53.76-5.57.76-1.88,0-3.51-.21-4.89-.64s-2.5-1.04-3.38-1.84-1.51-1.76-1.89-2.88c-.38-1.12-.57-2.37-.57-3.76,0-1.17.15-2.43.45-3.78l4.5-22.53h6.55l-4.53,22.69c-.21,1.1-.32,2.07-.32,2.9,0,.73.09,1.37.27,1.92s.45,1.01.82,1.38c.37.38.88.66,1.52.84.64.19,1.4.28,2.29.28,1.07,0,2.02-.14,2.86-.41.84-.27,1.58-.72,2.21-1.33s1.16-1.39,1.59-2.34c.42-.95.77-2.11,1.04-3.47l4.53-22.45h6.58l-4.55,22.53h0Z" fill="#fff"/>
+        <path d="M277.38,94.35c-1.97,0-3.8-.12-5.49-.38-1.69-.25-3.31-.62-4.87-1.12l1.25-6.15c.75.27,1.54.52,2.37.75s1.68.43,2.53.59,1.7.29,2.55.37c.85.09,1.68.14,2.48.14,1.4,0,2.61-.13,3.61-.39s1.83-.61,2.48-1.05c.65-.45,1.12-.96,1.43-1.54.3-.57.45-1.18.45-1.82,0-.74-.2-1.39-.6-1.93s-.93-1.03-1.6-1.48c-.67-.45-1.42-.86-2.27-1.25-.84-.39-1.7-.79-2.58-1.21s-1.74-.87-2.57-1.36c-.84-.48-1.59-1.06-2.25-1.73-.67-.66-1.2-1.44-1.6-2.32s-.6-1.91-.6-3.1c0-1.42.3-2.79.89-4.12.59-1.32,1.51-2.5,2.74-3.53,1.23-1.03,2.8-1.85,4.71-2.46s4.18-.92,6.8-.92c.77,0,1.54.03,2.3.09.77.06,1.53.14,2.27.24.73.1,1.43.21,2.09.35s1.25.27,1.79.41l-1.15,5.78c-.52-.18-1.09-.34-1.74-.49s-1.32-.28-2.02-.4c-.7-.11-1.41-.2-2.12-.27-.71-.06-1.39-.09-2.03-.09-1.26,0-2.34.11-3.25.33s-1.65.52-2.24.91-1.02.84-1.29,1.36c-.28.52-.41,1.08-.41,1.66,0,.68.2,1.27.61,1.77.41.51.95.97,1.61,1.4.67.43,1.42.84,2.27,1.23.84.39,1.71.8,2.59,1.24.89.43,1.75.91,2.6,1.42.84.52,1.6,1.12,2.27,1.8.66.69,1.2,1.48,1.61,2.37.41.9.61,1.93.61,3.11,0,1.79-.38,3.42-1.14,4.87-.77,1.46-1.85,2.7-3.26,3.73-1.41,1.03-3.12,1.82-5.13,2.37s-4.25.82-6.71.82" fill="#fff"/>
+        <path d="M444.87,93.74l6.74-34.81h7.29l-5.66,29.18h18.68l-1.11,5.63h-25.94Z" fill="#fff"/>
+        <path d="M515.4,65.32l-7.86,16.19h9.11l-1.25-16.19ZM517.63,93.74l-.56-6.87h-12.14l-3.33,6.87h-6.82l17.28-34.81h9.16l3.33,34.81h-6.93.01Z" fill="#fff"/>
+        <path d="M563.02,58.93h14.43c4.13,0,7.26.68,9.39,2.04,2.12,1.36,3.19,3.36,3.19,6.02,0,2.26-.68,4.11-2.04,5.55s-3.35,2.43-5.97,2.98c2.24.38,3.99,1.25,5.25,2.61s1.89,3.02,1.89,4.98c0,3.48-1.29,6.12-3.87,7.93s-6.45,2.72-11.62,2.72h-17.42l6.77-34.81v-.02ZM567.56,72.96h7.26c2.88,0,4.93-.38,6.14-1.14s1.82-2,1.82-3.73c0-1.32-.47-2.27-1.41-2.87-.94-.59-2.51-.89-4.72-.89h-7.44l-1.66,8.62h0ZM564.57,88.33h8.1c3.44,0,5.83-.42,7.16-1.25,1.33-.83,2-2.21,2-4.14,0-1.48-.56-2.62-1.68-3.41s-2.95-1.19-5.48-1.19h-8.15l-1.95,9.98h0Z" fill="#fff"/>
+        <path d="M625.74,94.35c-1.97,0-3.8-.12-5.49-.38-1.69-.25-3.31-.62-4.87-1.12l1.25-6.15c.75.27,1.54.52,2.37.75s1.68.43,2.53.59,1.7.29,2.55.37c.85.09,1.68.14,2.48.14,1.4,0,2.61-.13,3.61-.39s1.83-.61,2.48-1.05c.65-.45,1.12-.96,1.43-1.54.3-.57.45-1.18.45-1.82,0-.74-.2-1.39-.6-1.93-.4-.54-.93-1.03-1.6-1.48-.67-.45-1.42-.86-2.27-1.25-.84-.39-1.7-.79-2.58-1.21s-1.74-.87-2.57-1.36c-.84-.48-1.59-1.06-2.25-1.73-.67-.66-1.2-1.44-1.6-2.32-.4-.88-.6-1.91-.6-3.1,0-1.42.3-2.79.89-4.12.59-1.32,1.51-2.5,2.74-3.53s2.8-1.85,4.71-2.46c1.91-.61,4.18-.92,6.8-.92.77,0,1.54.03,2.3.09.77.06,1.53.14,2.27.24.73.1,1.43.21,2.09.35s1.25.27,1.79.41l-1.15,5.78c-.52-.18-1.09-.34-1.74-.49-.65-.15-1.32-.28-2.02-.4-.7-.11-1.41-.2-2.12-.27-.71-.06-1.39-.09-2.03-.09-1.26,0-2.34.11-3.25.33s-1.65.52-2.24.91-1.02.84-1.29,1.36c-.28.52-.41,1.08-.41,1.66,0,.68.2,1.27.61,1.77.41.51.95.97,1.61,1.4.67.43,1.42.84,2.27,1.23.84.39,1.71.8,2.59,1.24.89.43,1.75.91,2.6,1.42.84.52,1.6,1.12,2.27,1.8.66.69,1.2,1.48,1.61,2.37.41.9.61,1.93.61,3.11,0,1.79-.38,3.42-1.14,4.87-.77,1.46-1.85,2.7-3.26,3.73-1.41,1.03-3.12,1.82-5.13,2.37s-4.25.82-6.71.82" fill="#fff"/>
+      </g>
+      <g id="Icon">
+        <polygon points="369.27 75.5 346.51 131.82 351.37 131.82 374.13 75.49 369.27 75.5" fill="#fff"/>
+        <path d="M343.37,106.47l1.83-9.11,55.5-21.86-46.74-21.8,1.84-9.17,54.28,24.9-2.45,12.21-64.26,24.84h0Z" fill="#e5e5e5"/>
+        <path d="M333.3,81.63l2.45-12.21,64.27-24.9-1.84,9.17-55.49,21.8,46.73,21.86-1.83,9.11-54.29-24.84h0Z" fill="#b2b2b2"/>
+        <polygon points="369.18 75.71 392.03 19.17 396.88 19.17 374.04 75.71 369.18 75.71" fill="#fff"/>
+      </g>
+    </svg>
+  </div>
 </div>
 
 <!-- ==================== APP SHELL ==================== -->
 <div class="card hidden" id="app-shell">
   <div class="app-header">
     <div>
-      <h1>Venon Zeiterfassung</h1>
+      <h1>VENON Zeiterfassung</h1>
       <div class="version">V1.0 · <span id="user-email"></span></div>
     </div>
     <button id="btn-logout" class="secondary" type="button">Ausloggen</button>
@@ -301,7 +344,8 @@ el('btn-submit').onclick = async () => {
   if (!email || !password) { setMsg('auth-msg', 'Bitte E-Mail und Passwort eingeben.', 'error'); return; }
 
   if (mode === 'signup') {
-    const { error } = await sb.auth.signUp({ email, password });
+    const redirectTo = window.location.origin + window.location.pathname;
+    const { error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo } });
     if (error) { setMsg('auth-msg', error.message, 'error'); return; }
     setMsg('auth-msg', 'Konto erstellt. Falls E-Mail-Bestätigung aktiviert ist, zuerst bestätigen, dann einloggen.', 'ok');
     return;
@@ -337,7 +381,7 @@ async function afterLogin() {
 }
 
 async function startEnrollment() {
-  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Venon Zeiterfassung' });
+  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'VENON Zeiterfassung' });
   if (error) { setMsg('auth-msg', error.message, 'error'); return; }
   enrollFactorId = data.id;
   el('qr-img').src = data.totp.qr_code;
@@ -366,15 +410,65 @@ el('btn-verify-challenge').onclick = async () => {
   await enterApp();
 };
 
+el('btn-forgot').onclick = () => {
+  clearMsg('auth-msg');
+  el('forgot-email').value = el('email').value;
+  show('auth-section', false);
+  show('forgot-section', true);
+};
+
+el('btn-forgot-back').onclick = () => {
+  clearMsg('forgot-msg');
+  show('forgot-section', false);
+  show('auth-section', true);
+};
+
+el('btn-send-reset').onclick = async () => {
+  clearMsg('forgot-msg');
+  const email = el('forgot-email').value.trim();
+  if (!email) { setMsg('forgot-msg', 'Bitte E-Mail eingeben.', 'error'); return; }
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) { setMsg('forgot-msg', error.message, 'error'); return; }
+  setMsg('forgot-msg', 'Falls diese E-Mail existiert, wurde ein Link zum Zurücksetzen verschickt. Bitte Posteingang prüfen.', 'ok');
+};
+
+// Wird ausgelöst, wenn jemand über den Reset-Link auf die Seite zurückkommt
+sb.auth.onAuthStateChange((event) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    show('auth-section', false);
+    show('forgot-section', false);
+    show('mfa-challenge-section', false);
+    show('mfa-enroll-section', false);
+    show('reset-password-section', true);
+  }
+});
+
+el('btn-set-new-password').onclick = async () => {
+  clearMsg('reset-password-msg');
+  const newPw = el('new-password').value;
+  if (!newPw || newPw.length < 6) { setMsg('reset-password-msg', 'Mindestens 6 Zeichen.', 'error'); return; }
+  const { error } = await sb.auth.updateUser({ password: newPw });
+  if (error) { setMsg('reset-password-msg', error.message, 'error'); return; }
+  setMsg('reset-password-msg', 'Passwort gespeichert. Du wirst eingeloggt…', 'ok');
+  setTimeout(async () => {
+    show('reset-password-section', false);
+    await afterLogin();
+  }, 1200);
+};
+
 el('btn-logout').onclick = async () => {
   await sb.auth.signOut();
   el('email').value = ''; el('password').value = ''; el('mfa-code').value = '';
   clearMsg('auth-msg'); clearMsg('mfa-challenge-msg'); clearMsg('mfa-enroll-msg');
+  clearMsg('forgot-msg'); clearMsg('reset-password-msg');
   document.body.classList.remove('app-mode');
   show('app-shell', false);
   show('auth-card', true);
   show('mfa-challenge-section', false);
   show('mfa-enroll-section', false);
+  show('forgot-section', false);
+  show('reset-password-section', false);
   show('auth-section', true);
 };
 
@@ -750,8 +844,8 @@ window.deleteSchicht = async (id) => {
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (session) await afterLogin();
-    el('debug-status').textContent = 'Verbunden mit: ' + SUPABASE_URL;
   } catch (e) {
+    show('debug-status', true);
     el('debug-status').textContent = 'Verbindungsfehler: ' + e.message;
   }
 })();
