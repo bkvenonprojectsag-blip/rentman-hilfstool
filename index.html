@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Venon Zeiterfassung – V1.0</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&family=Titillium+Web:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a0f2e;
+    --bg-card:#241640;
+    --bg-input:#150a26;
+    --border:#3a2a5c;
+    --accent:#39ff88;
+    --accent-dim:#1f8a52;
+    --text:#f1eefb;
+    --text-dim:#a89bc9;
+    --error:#ff5470;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;min-height:100vh;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Titillium Web',sans-serif;
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:24px;
+  }
+  .card{
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:32px;
+    width:100%;max-width:420px;
+    margin-top:24px;
+  }
+  body.app-mode .card{ max-width:760px; }
+  h1{font-family:'Quantico',sans-serif;font-size:1.4rem;margin:0 0 4px;letter-spacing:.02em;}
+  h2{font-family:'Quantico',sans-serif;font-size:1.05rem;margin:0 0 12px;}
+  .version{color:var(--text-dim);font-size:.75rem;margin-bottom:24px;}
+  p{line-height:1.5;color:var(--text-dim);font-size:.9rem;}
+  label{display:block;font-size:.85rem;margin:14px 0 6px;color:var(--text-dim);}
+  input,select,textarea{
+    width:100%;padding:10px 12px;border-radius:6px;border:1px solid var(--border);
+    background:var(--bg-input);color:var(--text);font-family:inherit;font-size:.95rem;
+  }
+  textarea{resize:vertical;min-height:60px;}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);border-color:var(--accent);}
+  button{
+    border:none;border-radius:6px;
+    background:var(--accent);color:#0c1f14;font-weight:700;font-family:'Quantico',sans-serif;
+    font-size:.9rem;cursor:pointer;letter-spacing:.02em;padding:10px 16px;
+  }
+  button.secondary{background:transparent;border:1px solid var(--accent-dim);color:var(--accent);}
+  button.danger{background:transparent;border:1px solid var(--error);color:var(--error);}
+  button.block{width:100%;margin-top:20px;}
+  button:disabled{opacity:.5;cursor:not-allowed;}
+  .msg{margin-top:14px;font-size:.85rem;padding:10px;border-radius:6px;display:none;}
+  .msg.show{display:block;}
+  .msg.error{background:rgba(255,84,112,.12);color:var(--error);border:1px solid rgba(255,84,112,.3);}
+  .msg.ok{background:rgba(57,255,136,.1);color:var(--accent);border:1px solid rgba(57,255,136,.3);}
+  .tabs{display:flex;gap:8px;margin-bottom:8px;}
+  .tabs button{margin:0;flex:1;background:transparent;border:1px solid var(--border);color:var(--text-dim);font-weight:400;}
+  .tabs button.active{background:var(--accent);color:#0c1f14;font-weight:700;}
+  .qr-wrap{background:#fff;padding:12px;border-radius:8px;display:flex;justify-content:center;margin:16px 0;}
+  .qr-wrap img{width:180px;height:180px;display:block;}
+  .secret{font-family:monospace;font-size:.75rem;word-break:break-all;color:var(--text-dim);background:var(--bg-input);padding:8px;border-radius:6px;margin-top:8px;}
+  .hidden{display:none !important;}
+  .status{font-size:.7rem;color:var(--text-dim);margin-top:24px;border-top:1px solid var(--border);padding-top:12px;word-break:break-all;}
+
+  /* App shell */
+  .app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+  .nav-tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px;}
+  .nav-tabs button{background:transparent;color:var(--text-dim);font-weight:400;padding:8px 14px;}
+  .nav-tabs button.active{background:var(--accent);color:#0c1f14;font-weight:700;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .day-group{margin-bottom:22px;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .day-header{background:#1f1440;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;font-size:.85rem;}
+  .day-header .date{font-weight:700;color:var(--text);}
+  .day-header .span{color:var(--text-dim);font-size:.8rem;}
+  .shift-row{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+  .shift-main{flex:1;}
+  .shift-title{font-weight:600;font-size:.92rem;}
+  .shift-sub{color:var(--text-dim);font-size:.8rem;margin-top:2px;}
+  .night-hint{color:var(--accent);font-size:.78rem;margin-top:4px;}
+  .shift-actions{display:flex;gap:6px;flex-shrink:0;}
+  .shift-actions button{padding:6px 10px;font-size:.78rem;}
+  .empty-hint{padding:24px;text-align:center;color:var(--text-dim);font-size:.85rem;}
+  .form-card{border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px;background:#1f1440;}
+  .form-actions{display:flex;gap:10px;margin-top:18px;}
+  .form-actions button{flex:1;}
+</style>
+</head>
+<body>
+
+<!-- ==================== AUTH CARD ==================== -->
+<div class="card" id="auth-card">
+  <h1>Venon Zeiterfassung</h1>
+  <div class="version">V1.0</div>
+
+  <div id="auth-section">
+    <div class="tabs">
+      <button id="tab-login" class="active" type="button">Login</button>
+      <button id="tab-signup" type="button">Registrieren</button>
+    </div>
+    <label for="email">E-Mail</label>
+    <input type="email" id="email" autocomplete="email">
+    <label for="password">Passwort</label>
+    <input type="password" id="password" autocomplete="current-password">
+    <button id="btn-submit" class="block" type="button">Einloggen</button>
+    <div id="auth-msg" class="msg"></div>
+  </div>
+
+  <div id="mfa-challenge-section" class="hidden">
+    <p>Code aus deiner Authenticator-App eingeben:</p>
+    <label for="mfa-code">6-stelliger Code</label>
+    <input type="text" id="mfa-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+    <button id="btn-verify-challenge" class="block" type="button">Bestätigen</button>
+    <div id="mfa-challenge-msg" class="msg"></div>
+  </div>
+
+  <div id="mfa-enroll-section" class="hidden">
+    <p>Zwei-Faktor-Authentifizierung einrichten: QR-Code mit Authenticator-App scannen.</p>
+    <div class="qr-wrap"><img id="qr-img" alt="QR-Code"></div>
+    <div class="secret" id="secret-text"></div>
+    <label for="enroll-code">Code aus der App eingeben</label>
+    <input type="text" id="enroll-code" inputmode="numeric" maxlength="6">
+    <button id="btn-verify-enroll" class="block" type="button">2FA aktivieren</button>
+    <div id="mfa-enroll-msg" class="msg"></div>
+  </div>
+
+  <div class="status" id="debug-status">Verbinde mit Supabase…</div>
+</div>
+
+<!-- ==================== APP SHELL ==================== -->
+<div class="card hidden" id="app-shell">
+  <div class="app-header">
+    <div>
+      <h1>Venon Zeiterfassung</h1>
+      <div class="version">V1.0 · <span id="user-email"></span></div>
+    </div>
+    <button id="btn-logout" class="secondary" type="button">Ausloggen</button>
+  </div>
+
+  <div class="nav-tabs">
+    <button id="nav-schichten" class="active" type="button">Schichten</button>
+    <button id="nav-einstellungen" type="button">⚙ Einstellungen</button>
+  </div>
+
+  <!-- TAB: SCHICHTEN -->
+  <div id="tab-schichten">
+    <button id="btn-neue-schicht" type="button">+ Neue Schicht</button>
+
+    <div class="form-card hidden" id="schicht-form-card">
+      <h2 id="form-title">Neue Schicht</h2>
+      <label for="f-status">Status</label>
+      <select id="f-status">
+        <option value="geplant">🕓 Zukunft</option>
+        <option value="vorbereitet">📝 Vorbereitet</option>
+        <option value="eingetragen">✅ Eingetragen (Rentman)</option>
+        <option value="fehler">⚠️ Fehler</option>
+      </select>
+
+      <div class="row2">
+        <div>
+          <label for="f-start">Start</label>
+          <input type="datetime-local" id="f-start">
+        </div>
+        <div>
+          <label for="f-end">Ende</label>
+          <input type="datetime-local" id="f-end">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label for="f-pause">Pause (Minuten)</label>
+          <input type="number" id="f-pause" min="0" step="5" value="0">
+        </div>
+        <div>
+          <label for="f-standort">Standort</label>
+          <select id="f-standort"></select>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label for="f-projekt-nr">Projektnummer</label>
+          <input type="text" id="f-projekt-nr">
+        </div>
+        <div>
+          <label for="f-projekt-name">Projektname</label>
+          <input type="text" id="f-projekt-name">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label for="f-funktion">Funktion</label>
+          <input type="text" id="f-funktion">
+        </div>
+        <div>
+          <label for="f-projektleiter">Projektleiter</label>
+          <input type="text" id="f-projektleiter">
+        </div>
+      </div>
+
+      <label for="f-km">Kilometer</label>
+      <input type="number" id="f-km" min="0" step="0.1">
+
+      <div class="form-card" style="margin-top:14px;margin-bottom:0;">
+        <h2 style="font-size:.9rem;">📍 Kilometer berechnen</h2>
+        <div class="row2">
+          <div>
+            <label for="km-start">Start</label>
+            <select id="km-start"></select>
+            <input type="text" id="km-start-custom" placeholder="Adresse eingeben" class="hidden" style="margin-top:8px;">
+          </div>
+          <div>
+            <label for="km-ziel">Ziel</label>
+            <select id="km-ziel"></select>
+            <input type="text" id="km-ziel-custom" placeholder="Adresse eingeben" class="hidden" style="margin-top:8px;">
+          </div>
+        </div>
+        <button id="btn-calc-km" class="secondary block" type="button">Berechnen</button>
+        <div id="km-calc-msg" class="msg"></div>
+      </div>
+
+      <label for="f-notizen">Notizen</label>
+      <textarea id="f-notizen"></textarea>
+
+      <div class="form-actions">
+        <button id="btn-save-schicht" type="button">Speichern</button>
+        <button id="btn-cancel-schicht" class="secondary" type="button">Abbrechen</button>
+      </div>
+      <div id="schicht-form-msg" class="msg"></div>
+    </div>
+
+    <div id="schicht-liste"></div>
+  </div>
+
+  <!-- TAB: EINSTELLUNGEN -->
+  <div id="tab-einstellungen" class="hidden">
+    <h2>Profil</h2>
+    <label for="e-name">Name</label>
+    <input type="text" id="e-name">
+    <label for="e-adresse">Wohnadresse</label>
+    <input type="text" id="e-adresse" placeholder="Strasse Nr., PLZ Ort">
+    <label for="e-arbeitsweg">Normaler Arbeitsweg (km, einfache Strecke)</label>
+    <input type="number" id="e-arbeitsweg" min="0" step="0.1">
+    <button id="btn-save-profil" class="block" type="button">Speichern</button>
+    <div id="profil-msg" class="msg"></div>
+    <p style="margin-top:20px;">Wohnadresse und Arbeitsweg werden in einer späteren Version genutzt, um bei ausserordentlichen Einsatzorten die abrechenbaren Kilometer automatisch zu berechnen.</p>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://gfzwwgefwtukgspqkcgl.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_E04rsYhp6a-CcBKGZrBptw_dEQnh6Ed';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const el = id => document.getElementById(id);
+const show = (id, on = true) => el(id).classList.toggle('hidden', !on);
+function setMsg(id, text, type) {
+  const box = el(id);
+  box.textContent = text;
+  box.className = 'msg show' + (type ? ' ' + type : '');
+}
+function clearMsg(id) {
+  const box = el(id);
+  box.textContent = '';
+  box.className = 'msg';
+}
+
+/* ============ AUTH / MFA (wie in der Testseite) ============ */
+let mode = 'login';
+let pendingFactorId = null;
+let pendingChallengeId = null;
+let enrollFactorId = null;
+let currentUser = null;
+
+el('tab-login').onclick = () => {
+  mode = 'login';
+  el('tab-login').classList.add('active');
+  el('tab-signup').classList.remove('active');
+  el('btn-submit').textContent = 'Einloggen';
+};
+el('tab-signup').onclick = () => {
+  mode = 'signup';
+  el('tab-signup').classList.add('active');
+  el('tab-login').classList.remove('active');
+  el('btn-submit').textContent = 'Konto erstellen';
+};
+
+el('btn-submit').onclick = async () => {
+  clearMsg('auth-msg');
+  const email = el('email').value.trim();
+  const password = el('password').value;
+  if (!email || !password) { setMsg('auth-msg', 'Bitte E-Mail und Passwort eingeben.', 'error'); return; }
+
+  if (mode === 'signup') {
+    const { error } = await sb.auth.signUp({ email, password });
+    if (error) { setMsg('auth-msg', error.message, 'error'); return; }
+    setMsg('auth-msg', 'Konto erstellt. Falls E-Mail-Bestätigung aktiviert ist, zuerst bestätigen, dann einloggen.', 'ok');
+    return;
+  }
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { setMsg('auth-msg', error.message, 'error'); return; }
+  await afterLogin();
+};
+
+async function afterLogin() {
+  const { data: aal, error: aalErr } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aalErr) { setMsg('auth-msg', aalErr.message, 'error'); return; }
+
+  if (aal.nextLevel === 'aal2' && aal.nextLevel !== aal.currentLevel) {
+    const { data: factors, error: fErr } = await sb.auth.mfa.listFactors();
+    if (fErr) { setMsg('auth-msg', fErr.message, 'error'); return; }
+    const totpFactor = factors.totp[0];
+    const { data: challenge, error: chErr } = await sb.auth.mfa.challenge({ factorId: totpFactor.id });
+    if (chErr) { setMsg('auth-msg', chErr.message, 'error'); return; }
+    pendingFactorId = totpFactor.id;
+    pendingChallengeId = challenge.id;
+    show('auth-section', false);
+    show('mfa-challenge-section', true);
+    return;
+  }
+
+  const { data: factors, error: fErr } = await sb.auth.mfa.listFactors();
+  if (fErr) { setMsg('auth-msg', fErr.message, 'error'); return; }
+  if (factors.totp.length === 0) { await startEnrollment(); return; }
+
+  await enterApp();
+}
+
+async function startEnrollment() {
+  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Venon Zeiterfassung' });
+  if (error) { setMsg('auth-msg', error.message, 'error'); return; }
+  enrollFactorId = data.id;
+  el('qr-img').src = data.totp.qr_code;
+  el('secret-text').textContent = 'Manuell eintragen: ' + data.totp.secret;
+  show('auth-section', false);
+  show('mfa-enroll-section', true);
+}
+
+el('btn-verify-enroll').onclick = async () => {
+  clearMsg('mfa-enroll-msg');
+  const code = el('enroll-code').value.trim();
+  const { data: challenge, error: chErr } = await sb.auth.mfa.challenge({ factorId: enrollFactorId });
+  if (chErr) { setMsg('mfa-enroll-msg', chErr.message, 'error'); return; }
+  const { error: vErr } = await sb.auth.mfa.verify({ factorId: enrollFactorId, challengeId: challenge.id, code });
+  if (vErr) { setMsg('mfa-enroll-msg', vErr.message, 'error'); return; }
+  show('mfa-enroll-section', false);
+  await enterApp();
+};
+
+el('btn-verify-challenge').onclick = async () => {
+  clearMsg('mfa-challenge-msg');
+  const code = el('mfa-code').value.trim();
+  const { error } = await sb.auth.mfa.verify({ factorId: pendingFactorId, challengeId: pendingChallengeId, code });
+  if (error) { setMsg('mfa-challenge-msg', error.message, 'error'); return; }
+  show('mfa-challenge-section', false);
+  await enterApp();
+};
+
+el('btn-logout').onclick = async () => {
+  await sb.auth.signOut();
+  el('email').value = ''; el('password').value = ''; el('mfa-code').value = '';
+  clearMsg('auth-msg'); clearMsg('mfa-challenge-msg'); clearMsg('mfa-enroll-msg');
+  document.body.classList.remove('app-mode');
+  show('app-shell', false);
+  show('auth-card', true);
+  show('mfa-challenge-section', false);
+  show('mfa-enroll-section', false);
+  show('auth-section', true);
+};
+
+/* ============ APP ============ */
+
+async function enterApp() {
+  const { data: { user } } = await sb.auth.getUser();
+  currentUser = user;
+  el('user-email').textContent = user.email;
+  document.body.classList.add('app-mode');
+  show('auth-card', false);
+  show('app-shell', true);
+  await loadStandorte();
+  await loadRegeln();
+  await loadProfil();
+  await loadSchichten();
+}
+
+/* --- Navigation --- */
+el('nav-schichten').onclick = () => {
+  el('nav-schichten').classList.add('active');
+  el('nav-einstellungen').classList.remove('active');
+  show('tab-schichten', true); show('tab-einstellungen', false);
+};
+el('nav-einstellungen').onclick = () => {
+  el('nav-einstellungen').classList.add('active');
+  el('nav-schichten').classList.remove('active');
+  show('tab-einstellungen', true); show('tab-schichten', false);
+};
+
+/* --- Stammdaten laden --- */
+let standorte = [];
+let regeln = [];
+
+async function loadStandorte() {
+  const { data, error } = await sb.from('standort').select('id, name, adresse').order('name');
+  if (error) { console.error(error); return; }
+  standorte = data;
+  const sel = el('f-standort');
+  sel.innerHTML = standorte.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  populateKmSelects();
+}
+
+function populateKmSelects() {
+  const options = [
+    `<option value="wohnadresse">Wohnadresse</option>`,
+    ...standorte.map(s => `<option value="${s.id}">${s.name}</option>`),
+    `<option value="custom">Andere Adresse…</option>`
+  ].join('');
+  el('km-start').innerHTML = options;
+  el('km-ziel').innerHTML = options;
+}
+
+function toggleKmCustom(selectId, inputId) {
+  show(inputId, el(selectId).value === 'custom');
+}
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'km-start') toggleKmCustom('km-start', 'km-start-custom');
+  if (e.target.id === 'km-ziel') toggleKmCustom('km-ziel', 'km-ziel-custom');
+});
+
+async function loadRegeln() {
+  const { data, error } = await sb.from('nachtzuschlag_regel').select('standort_id, start_zeit, end_zeit, zuschlag_prozent, standort:standort_id(name)');
+  if (error) { console.error(error); return; }
+  regeln = data.map(r => ({
+    standortName: r.standort ? r.standort.name : null,
+    start: r.start_zeit, end: r.end_zeit, prozent: r.zuschlag_prozent
+  }));
+}
+
+/* --- Einstellungen / Profil --- */
+let currentProfile = null;
+
+async function loadProfil() {
+  const { data, error } = await sb.from('profile').select('*').eq('id', currentUser.id).maybeSingle();
+  if (error) { console.error(error); return; }
+  currentProfile = data;
+  if (data) {
+    el('e-name').value = data.name || '';
+    el('e-adresse').value = data.wohnadresse || '';
+    el('e-arbeitsweg').value = data.normaler_arbeitsweg_km ?? '';
+  }
+}
+
+el('btn-save-profil').onclick = async () => {
+  clearMsg('profil-msg');
+  const payload = {
+    id: currentUser.id,
+    name: el('e-name').value.trim(),
+    wohnadresse: el('e-adresse').value.trim() || null,
+    normaler_arbeitsweg_km: el('e-arbeitsweg').value ? parseFloat(el('e-arbeitsweg').value) : null
+  };
+  const { error } = await sb.from('profile').upsert(payload);
+  if (error) { setMsg('profil-msg', error.message, 'error'); return; }
+  currentProfile = payload;
+  setMsg('profil-msg', 'Gespeichert.', 'ok');
+};
+
+/* --- Kilometer-Rechner (openrouteservice / HeiGIT) --- */
+const ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImUxZTM5ZmNhNWE4ZjQ3ZWE5ZTYxZWE0OGQyODA1OTZhIiwiaCI6Im11cm11cjY0In0=';
+const geocodeCache = {};
+
+async function geocodeAddress(address) {
+  if (geocodeCache[address]) return geocodeCache[address];
+  const url = `https://api.heigit.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}&size=1&boundary.country=CH`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Geocoding fehlgeschlagen (' + res.status + ')');
+  const data = await res.json();
+  if (!data.features || !data.features.length) throw new Error('Adresse nicht gefunden: ' + address);
+  const coords = data.features[0].geometry.coordinates; // [lon, lat]
+  geocodeCache[address] = coords;
+  return coords;
+}
+
+async function routeDistanceKm(coordA, coordB) {
+  const res = await fetch('https://api.heigit.org/v2/directions/driving-car', {
+    method: 'POST',
+    headers: { 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ coordinates: [coordA, coordB] })
+  });
+  if (!res.ok) throw new Error('Routenberechnung fehlgeschlagen (' + res.status + ')');
+  const data = await res.json();
+  const meters = data.routes[0].summary.distance;
+  return meters / 1000;
+}
+
+function resolveKmAddress(selectId, customId) {
+  const val = el(selectId).value;
+  if (val === 'wohnadresse') return { address: currentProfile ? currentProfile.wohnadresse : null, isHome: true };
+  if (val === 'custom') return { address: el(customId).value.trim(), isHome: false };
+  const s = standorte.find(x => x.id === val);
+  return { address: s ? s.adresse : null, isHome: false };
+}
+
+el('btn-calc-km').onclick = async () => {
+  clearMsg('km-calc-msg');
+  const start = resolveKmAddress('km-start', 'km-start-custom');
+  const ziel = resolveKmAddress('km-ziel', 'km-ziel-custom');
+
+  if (!start.address || !ziel.address) {
+    setMsg('km-calc-msg', 'Bitte für Start und Ziel eine gültige Adresse wählen bzw. eintragen (Wohnadresse zuerst in den Einstellungen speichern).', 'error');
+    return;
+  }
+
+  el('btn-calc-km').disabled = true;
+  el('btn-calc-km').textContent = 'Berechne…';
+  try {
+    const [coordA, coordB] = await Promise.all([geocodeAddress(start.address), geocodeAddress(ziel.address)]);
+    let km = await routeDistanceKm(coordA, coordB);
+
+    let hinweis = `Strecke ${start.address} → ${ziel.address}: ${km.toFixed(1)} km`;
+    if ((start.isHome || ziel.isHome) && currentProfile && currentProfile.normaler_arbeitsweg_km) {
+      const abzug = currentProfile.normaler_arbeitsweg_km;
+      const abrechenbar = Math.max(0, km - abzug);
+      hinweis += ` · abzüglich normaler Arbeitsweg (${abzug} km) = ${abrechenbar.toFixed(1)} km abrechenbar`;
+      km = abrechenbar;
+    }
+    el('f-km').value = km.toFixed(1);
+    setMsg('km-calc-msg', hinweis, 'ok');
+  } catch (e) {
+    setMsg('km-calc-msg', e.message, 'error');
+  } finally {
+    el('btn-calc-km').disabled = false;
+    el('btn-calc-km').textContent = 'Berechnen';
+  }
+};
+
+/* --- Nachtzuschlag-Berechnung --- */
+function timeToMinutes(t) {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function calcNachtMinuten(start, end, standortName) {
+  const regel = regeln.find(r => r.standortName === standortName) || regeln.find(r => r.standortName === null);
+  if (!regel) return { minuten: 0, prozent: 0 };
+  const startMin = timeToMinutes(regel.start);
+  const endMin = timeToMinutes(regel.end);
+  const dauer = endMin > startMin ? (endMin - startMin) : (24 * 60 - startMin + endMin);
+
+  let total = 0;
+  let cursor = new Date(start);
+  cursor.setDate(cursor.getDate() - 1);
+  cursor.setHours(0, 0, 0, 0);
+  const lastDay = new Date(end);
+  lastDay.setHours(0, 0, 0, 0);
+
+  while (cursor <= lastDay) {
+    const winStart = new Date(cursor);
+    winStart.setMinutes(winStart.getMinutes() + startMin);
+    const winEnd = new Date(winStart);
+    winEnd.setMinutes(winEnd.getMinutes() + dauer);
+    const overlapStart = new Date(Math.max(start, winStart));
+    const overlapEnd = new Date(Math.min(end, winEnd));
+    if (overlapEnd > overlapStart) total += (overlapEnd - overlapStart) / 60000;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return { minuten: total, prozent: regel.prozent };
+}
+
+function fmtTime(d) {
+  return d.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' });
+}
+function fmtDur(minuten) {
+  const h = Math.floor(minuten / 60), m = Math.round(minuten % 60);
+  return h + 'h' + (m ? ' ' + String(m).padStart(2, '0') + 'min' : '');
+}
+function fmtDayHeader(d) {
+  return d.toLocaleDateString('de-CH', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+const STATUS_ICON = { geplant: '🕓', vorbereitet: '📝', eingetragen: '✅', fehler: '⚠️' };
+const STATUS_LABEL = { geplant: 'Zukunft', vorbereitet: 'Vorbereitet', eingetragen: 'Eingetragen', fehler: 'Fehler' };
+
+/* --- Schichten laden & rendern --- */
+async function loadSchichten() {
+  const { data, error } = await sb
+    .from('schicht')
+    .select('*, standort:standort_id(name)')
+    .order('start_zeit', { ascending: false });
+  if (error) { el('schicht-liste').innerHTML = `<div class="empty-hint">Fehler beim Laden: ${error.message}</div>`; return; }
+  renderSchichten(data);
+}
+
+function renderSchichten(rows) {
+  const container = el('schicht-liste');
+  if (!rows.length) { container.innerHTML = '<div class="empty-hint">Noch keine Schichten erfasst.</div>'; return; }
+
+  // Gruppierung nach Start-Datum (lokal)
+  const groups = {};
+  rows.forEach(r => {
+    const start = new Date(r.start_zeit);
+    const key = start.toDateString();
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(r);
+  });
+
+  let html = '';
+  Object.keys(groups)
+    .sort((a, b) => new Date(b) - new Date(a))
+    .forEach(key => {
+      const dayRows = groups[key];
+      const starts = dayRows.map(r => new Date(r.start_zeit));
+      const ends = dayRows.map(r => new Date(r.end_zeit));
+      const minStart = new Date(Math.min(...starts));
+      const maxEnd = new Date(Math.max(...ends));
+
+      html += `<div class="day-group">
+        <div class="day-header">
+          <span class="date">${fmtDayHeader(minStart)}</span>
+          <span class="span">${fmtTime(minStart)} – ${fmtTime(maxEnd)}</span>
+        </div>`;
+
+      dayRows.forEach(r => {
+        const start = new Date(r.start_zeit);
+        const end = new Date(r.end_zeit);
+        const bruttoMin = (end - start) / 60000;
+        const nettoMin = bruttoMin - (r.pause_minuten || 0);
+        const standortName = r.standort ? r.standort.name : '–';
+        const nacht = calcNachtMinuten(start, end, standortName);
+
+        let nachtHtml = '';
+        if (nacht.minuten > 0) {
+          nachtHtml = `<div class="night-hint">🌙 davon ${fmtDur(nacht.minuten)} Nachtzuschlag (+${nacht.prozent}%) · effektive Endzeit unverändert ${fmtTime(end)}</div>`;
+        }
+
+        html += `<div class="shift-row">
+          <div class="shift-main">
+            <div class="shift-title">${STATUS_ICON[r.status]} ${fmtTime(start)} – ${fmtTime(end)} · ${fmtDur(nettoMin)} · ${standortName}</div>
+            <div class="shift-sub">${r.projekt_name || ''} ${r.projekt_nummer ? '(' + r.projekt_nummer + ')' : ''} ${r.funktion ? '· ' + r.funktion : ''}</div>
+            ${nachtHtml}
+            ${r.notizen ? `<div class="shift-sub">📝 ${r.notizen}</div>` : ''}
+          </div>
+          <div class="shift-actions">
+            <button class="secondary" onclick="editSchicht('${r.id}')" type="button">Bearbeiten</button>
+            <button class="danger" onclick="deleteSchicht('${r.id}')" type="button">Löschen</button>
+          </div>
+        </div>`;
+      });
+
+      html += `</div>`;
+    });
+
+  container.innerHTML = html;
+}
+
+/* --- Formular: Neu / Bearbeiten --- */
+let editingId = null;
+let allSchichten = [];
+
+el('btn-neue-schicht').onclick = () => openForm(null);
+
+function openForm(row) {
+  editingId = row ? row.id : null;
+  el('form-title').textContent = row ? 'Schicht bearbeiten' : 'Neue Schicht';
+  el('f-status').value = row ? row.status : 'geplant';
+  el('f-start').value = row ? toLocalInputValue(row.start_zeit) : '';
+  el('f-end').value = row ? toLocalInputValue(row.end_zeit) : '';
+  el('f-pause').value = row ? row.pause_minuten : 0;
+  el('f-standort').value = row ? row.standort_id : (standorte[0] ? standorte[0].id : '');
+  el('f-projekt-nr').value = row ? (row.projekt_nummer || '') : '';
+  el('f-projekt-name').value = row ? (row.projekt_name || '') : '';
+  el('f-funktion').value = row ? (row.funktion || '') : '';
+  el('f-projektleiter').value = row ? (row.projektleiter || '') : '';
+  el('f-km').value = row ? (row.kilometer ?? '') : '';
+  el('f-notizen').value = row ? (row.notizen || '') : '';
+  clearMsg('schicht-form-msg');
+  clearMsg('km-calc-msg');
+  if (el('km-start').options.length) { el('km-start').selectedIndex = 0; el('km-ziel').selectedIndex = 0; }
+  show('km-start-custom', false);
+  show('km-ziel-custom', false);
+  show('schicht-form-card', true);
+}
+
+function toLocalInputValue(iso) {
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+el('btn-cancel-schicht').onclick = () => { show('schicht-form-card', false); editingId = null; };
+
+el('btn-save-schicht').onclick = async () => {
+  clearMsg('schicht-form-msg');
+  const start = el('f-start').value;
+  const end = el('f-end').value;
+  if (!start || !end) { setMsg('schicht-form-msg', 'Start und Ende sind Pflichtfelder.', 'error'); return; }
+  if (new Date(end) <= new Date(start)) { setMsg('schicht-form-msg', 'Ende muss nach Start liegen.', 'error'); return; }
+
+  const payload = {
+    user_id: currentUser.id,
+    status: el('f-status').value,
+    start_zeit: new Date(start).toISOString(),
+    end_zeit: new Date(end).toISOString(),
+    pause_minuten: parseInt(el('f-pause').value || '0', 10),
+    standort_id: el('f-standort').value || null,
+    projekt_nummer: el('f-projekt-nr').value.trim() || null,
+    projekt_name: el('f-projekt-name').value.trim() || null,
+    funktion: el('f-funktion').value.trim() || null,
+    projektleiter: el('f-projektleiter').value.trim() || null,
+    kilometer: el('f-km').value ? parseFloat(el('f-km').value) : null,
+    notizen: el('f-notizen').value.trim() || null
+  };
+
+  let error;
+  if (editingId) {
+    ({ error } = await sb.from('schicht').update(payload).eq('id', editingId));
+  } else {
+    ({ error } = await sb.from('schicht').insert(payload));
+  }
+  if (error) { setMsg('schicht-form-msg', error.message, 'error'); return; }
+
+  show('schicht-form-card', false);
+  editingId = null;
+  await loadSchichten();
+};
+
+window.editSchicht = async (id) => {
+  const { data, error } = await sb.from('schicht').select('*').eq('id', id).single();
+  if (error) { alert(error.message); return; }
+  openForm(data);
+};
+
+window.deleteSchicht = async (id) => {
+  if (!confirm('Diese Schicht wirklich löschen?')) return;
+  const { error } = await sb.from('schicht').delete().eq('id', id);
+  if (error) { alert(error.message); return; }
+  await loadSchichten();
+};
+
+/* --- Session-Check beim Laden --- */
+(async () => {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) await afterLogin();
+    el('debug-status').textContent = 'Verbunden mit: ' + SUPABASE_URL;
+  } catch (e) {
+    el('debug-status').textContent = 'Verbindungsfehler: ' + e.message;
+  }
+})();
+</script>
+</body>
+</html>
