@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VENON Zeiterfassung – V1.0</title>
+<title>VENON Zeiterfassung – V1.1</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-populate@1.21.0/browser/xlsx-populate.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&family=Titillium+Web:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -102,7 +103,7 @@
 <!-- ==================== AUTH CARD ==================== -->
 <div class="card" id="auth-card">
   <h1>VENON Zeiterfassung</h1>
-  <div class="version">V1.0</div>
+  <div class="version">V1.1</div>
 
   <div id="auth-section">
     <div class="tabs">
@@ -112,7 +113,10 @@
     <label for="email">E-Mail</label>
     <input type="email" id="email" autocomplete="email">
     <label for="password">Passwort</label>
-    <input type="password" id="password" autocomplete="current-password">
+    <div style="position:relative;">
+      <input type="password" id="password" autocomplete="current-password" style="padding-right:44px;">
+      <button type="button" id="btn-toggle-pw" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;padding:6px;margin:0;color:var(--text-dim);cursor:pointer;font-size:1rem;">👁</button>
+    </div>
     <button id="btn-submit" class="block" type="button">Einloggen</button>
     <button id="btn-forgot" class="forgot-link" type="button">Passwort vergessen?</button>
     <div id="auth-msg" class="msg"></div>
@@ -182,13 +186,14 @@
   <div class="app-header">
     <div>
       <h1>VENON Zeiterfassung</h1>
-      <div class="version">V1.0 · <span id="user-email"></span></div>
+      <div class="version">V1.1 · <span id="user-email"></span></div>
     </div>
     <button id="btn-logout" class="secondary" type="button">Ausloggen</button>
   </div>
 
   <div class="nav-tabs">
     <button id="nav-schichten" class="active" type="button">Schichten</button>
+    <button id="nav-spesen" type="button">Spesen</button>
     <button id="nav-einstellungen" type="button">⚙ Einstellungen</button>
   </div>
 
@@ -281,7 +286,75 @@
       <div id="schicht-form-msg" class="msg"></div>
     </div>
 
+    <div id="schicht-export-bar" class="hidden" style="display:flex;gap:12px;align-items:center;margin:14px 0;">
+      <span id="schicht-selected-count" style="color:var(--text-dim);font-size:.85rem;"></span>
+      <button id="btn-export-txt" class="secondary" type="button" style="flex:0;">📄 TXT-Nachweis erstellen</button>
+    </div>
     <div id="schicht-liste"></div>
+  </div>
+
+  <!-- TAB: SPESEN -->
+  <div id="tab-spesen" class="hidden">
+    <button id="btn-neue-spesen" type="button">+ Neue Spesenposition</button>
+
+    <div class="form-card hidden" id="spesen-form-card">
+      <h2 id="spesen-form-title">Neue Spesenposition</h2>
+      <div class="row2">
+        <div>
+          <label for="sp-datum">Datum</label>
+          <input type="date" id="sp-datum">
+        </div>
+        <div>
+          <label for="sp-auftrag">Auftrag / Projekt</label>
+          <input type="text" id="sp-auftrag">
+        </div>
+      </div>
+
+      <label for="sp-position">Position</label>
+      <select id="sp-position"></select>
+
+      <div id="sp-freitext-wrap" class="hidden">
+        <label for="sp-freitext">Beschreibung (bei "Divers" Pflichtfeld)</label>
+        <input type="text" id="sp-freitext">
+      </div>
+
+      <div class="row2">
+        <div>
+          <label for="sp-anzahl">Anzahl</label>
+          <input type="number" id="sp-anzahl" min="0" step="0.01" value="1">
+        </div>
+        <div>
+          <label for="sp-stueckpreis">Stückpreis (CHF)</label>
+          <input type="number" id="sp-stueckpreis" min="0" step="0.05">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label for="sp-kst">Kostenstelle</label>
+          <select id="sp-kst"></select>
+        </div>
+        <div>
+          <label for="sp-mwst">MWST (%)</label>
+          <input type="number" id="sp-mwst" min="0" step="0.1">
+        </div>
+      </div>
+
+      <label for="sp-notizen">Notizen</label>
+      <textarea id="sp-notizen"></textarea>
+
+      <div class="form-actions">
+        <button id="btn-save-spesen" type="button">Speichern</button>
+        <button id="btn-cancel-spesen" class="secondary" type="button">Abbrechen</button>
+      </div>
+      <div id="spesen-form-msg" class="msg"></div>
+    </div>
+
+    <div id="spesen-export-bar" class="hidden" style="display:flex;gap:12px;align-items:center;margin:14px 0;">
+      <span id="spesen-selected-count" style="color:var(--text-dim);font-size:.85rem;"></span>
+      <button id="btn-export-excel" class="secondary" type="button" style="flex:0;">📊 Excel-Export erstellen</button>
+    </div>
+    <div id="spesen-liste"></div>
   </div>
 
   <!-- TAB: EINSTELLUNGEN -->
@@ -323,6 +396,12 @@ let pendingFactorId = null;
 let pendingChallengeId = null;
 let enrollFactorId = null;
 let currentUser = null;
+
+el('btn-toggle-pw').onclick = () => {
+  const field = el('password');
+  field.type = field.type === 'password' ? 'text' : 'password';
+  el('btn-toggle-pw').textContent = field.type === 'password' ? '👁' : '🙈';
+};
 
 el('tab-login').onclick = () => {
   mode = 'login';
@@ -485,18 +564,28 @@ async function enterApp() {
   await loadRegeln();
   await loadProfil();
   await loadSchichten();
+  await loadSpesenStammdaten();
+  await loadSpesenListe();
 }
 
 /* --- Navigation --- */
 el('nav-schichten').onclick = () => {
   el('nav-schichten').classList.add('active');
+  el('nav-spesen').classList.remove('active');
   el('nav-einstellungen').classList.remove('active');
-  show('tab-schichten', true); show('tab-einstellungen', false);
+  show('tab-schichten', true); show('tab-spesen', false); show('tab-einstellungen', false);
+};
+el('nav-spesen').onclick = () => {
+  el('nav-spesen').classList.add('active');
+  el('nav-schichten').classList.remove('active');
+  el('nav-einstellungen').classList.remove('active');
+  show('tab-spesen', true); show('tab-schichten', false); show('tab-einstellungen', false);
 };
 el('nav-einstellungen').onclick = () => {
   el('nav-einstellungen').classList.add('active');
   el('nav-schichten').classList.remove('active');
-  show('tab-einstellungen', true); show('tab-schichten', false);
+  el('nav-spesen').classList.remove('active');
+  show('tab-einstellungen', true); show('tab-schichten', false); show('tab-spesen', false);
 };
 
 /* --- Stammdaten laden --- */
@@ -683,6 +772,62 @@ function fmtDayHeader(d) {
 const STATUS_ICON = { geplant: '🕓', vorbereitet: '📝', eingetragen: '✅', fehler: '⚠️' };
 const STATUS_LABEL = { geplant: 'Zukunft', vorbereitet: 'Vorbereitet', eingetragen: 'Eingetragen', fehler: 'Fehler' };
 
+function updateSchichtSelectedCount() {
+  el('schicht-selected-count').textContent = selectedSchichtIds.size + ' ausgewählt';
+}
+
+document.addEventListener('change', (e) => {
+  if (e.target.classList.contains('schicht-check')) {
+    const id = e.target.dataset.id;
+    if (e.target.checked) selectedSchichtIds.add(id); else selectedSchichtIds.delete(id);
+    updateSchichtSelectedCount();
+  }
+});
+
+function fmtDateLongDE(d) {
+  return d.toLocaleDateString('de-CH', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+el('btn-export-txt').onclick = () => {
+  const rows = allSchichtRows.filter(r => selectedSchichtIds.has(r.id));
+  if (!rows.length) { alert('Bitte mindestens eine Schicht auswählen.'); return; }
+  rows.sort((a, b) => new Date(a.start_zeit) - new Date(b.start_zeit));
+
+  const name = currentProfile && currentProfile.name ? currentProfile.name : currentUser.email;
+  let lines = [];
+  lines.push('VENON Zeiterfassung – Nachweis');
+  lines.push('Mitarbeiter: ' + name);
+  lines.push('Erstellt am: ' + new Date().toLocaleDateString('de-CH'));
+  lines.push('');
+
+  let totalMin = 0;
+  rows.forEach(r => {
+    const start = new Date(r.start_zeit);
+    const end = new Date(r.end_zeit);
+    const nettoMin = (end - start) / 60000 - (r.pause_minuten || 0);
+    totalMin += nettoMin;
+    const standortName = r.standort ? r.standort.name : '–';
+    const nacht = calcNachtMinuten(start, end, standortName);
+
+    lines.push(fmtDateLongDE(start));
+    lines.push(`  ${fmtTime(start)}–${fmtTime(end)} · ${standortName} · Pause ${r.pause_minuten || 0}min · Netto ${fmtDur(nettoMin)}`);
+    if (r.projekt_name || r.projekt_nummer) lines.push(`  Projekt: ${r.projekt_name || ''} ${r.projekt_nummer ? '(' + r.projekt_nummer + ')' : ''}`.trim());
+    if (nacht.minuten > 0) lines.push(`  davon ${fmtDur(nacht.minuten)} Nachtzuschlag (+${nacht.prozent}%)`);
+    if (r.notizen) lines.push(`  Notiz: ${r.notizen}`);
+    lines.push('');
+  });
+
+  lines.push('Total Stunden: ' + fmtDur(totalMin));
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Nachweis_${name.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 /* --- Schichten laden & rendern --- */
 async function loadSchichten() {
   const { data, error } = await sb
@@ -693,8 +838,14 @@ async function loadSchichten() {
   renderSchichten(data);
 }
 
+let allSchichtRows = [];
+let selectedSchichtIds = new Set();
+
 function renderSchichten(rows) {
+  allSchichtRows = rows;
   const container = el('schicht-liste');
+  show('schicht-export-bar', rows.length > 0);
+  updateSchichtSelectedCount();
   if (!rows.length) { container.innerHTML = '<div class="empty-hint">Noch keine Schichten erfasst.</div>'; return; }
 
   // Gruppierung nach Start-Datum (lokal)
@@ -736,6 +887,7 @@ function renderSchichten(rows) {
         }
 
         html += `<div class="shift-row">
+          <input type="checkbox" class="schicht-check" data-id="${r.id}" ${selectedSchichtIds.has(r.id) ? 'checked' : ''} style="margin-top:4px;width:auto;">
           <div class="shift-main">
             <div class="shift-title">${STATUS_ICON[r.status]} ${fmtTime(start)} – ${fmtTime(end)} · ${fmtDur(nettoMin)} · ${standortName}</div>
             <div class="shift-sub">${r.projekt_name || ''} ${r.projekt_nummer ? '(' + r.projekt_nummer + ')' : ''} ${r.funktion ? '· ' + r.funktion : ''}</div>
@@ -839,8 +991,239 @@ window.deleteSchicht = async (id) => {
   await loadSchichten();
 };
 
+/* ============ SPESEN ============ */
+let spesenPositionen = [];
+let kostenstellen = [];
+let kmAnsatz = 0.70;
+
+async function loadSpesenStammdaten() {
+  const { data: pos, error: posErr } = await sb.from('spesen_position').select('id, name, konto').order('sortierung');
+  if (posErr) { console.error(posErr); } else {
+    spesenPositionen = pos;
+    el('sp-position').innerHTML = spesenPositionen.map(p => `<option value="${p.id}">${p.name}${p.konto ? ' (' + p.konto + ')' : ''}</option>`).join('');
+  }
+
+  const { data: kst, error: kstErr } = await sb.from('kostenstelle').select('id, name, nummer').order('nummer');
+  if (kstErr) { console.error(kstErr); } else {
+    kostenstellen = kst;
+    el('sp-kst').innerHTML = '<option value="">–</option>' + kostenstellen.map(k => `<option value="${k.id}">${k.name} (${k.nummer})</option>`).join('');
+  }
+
+  const { data: einst } = await sb.from('einstellung').select('wert').eq('schluessel', 'km_ansatz').maybeSingle();
+  if (einst) kmAnsatz = parseFloat(einst.wert);
+}
+
+el('sp-position').addEventListener('change', () => {
+  const pos = spesenPositionen.find(p => p.id === el('sp-position').value);
+  const isDivers = pos && pos.name === 'Divers';
+  show('sp-freitext-wrap', isDivers);
+  const isKm = pos && pos.name === 'Auftrag - Fahr- und Parkspesen';
+  if (isKm && !el('sp-stueckpreis').value) {
+    el('sp-stueckpreis').value = kmAnsatz.toFixed(2);
+    el('sp-anzahl').placeholder = 'Anzahl Kilometer';
+  }
+});
+
+let editingSpesenId = null;
+
+el('btn-neue-spesen').onclick = () => openSpesenForm(null);
+
+function openSpesenForm(row) {
+  editingSpesenId = row ? row.id : null;
+  el('spesen-form-title').textContent = row ? 'Spesenposition bearbeiten' : 'Neue Spesenposition';
+  el('sp-datum').value = row ? row.datum : new Date().toISOString().slice(0, 10);
+  el('sp-auftrag').value = row ? (row.auftrag || '') : '';
+  el('sp-position').value = row ? row.spesen_position_id : (spesenPositionen[0] ? spesenPositionen[0].id : '');
+  el('sp-freitext').value = row ? (row.freitext || '') : '';
+  el('sp-anzahl').value = row ? row.anzahl : 1;
+  el('sp-stueckpreis').value = row ? row.stueckpreis : '';
+  el('sp-kst').value = row ? (row.kostenstelle_id || '') : '';
+  el('sp-mwst').value = row ? (row.mwst ?? '') : '';
+  el('sp-notizen').value = row ? (row.notizen || '') : '';
+  const pos = spesenPositionen.find(p => p.id === el('sp-position').value);
+  show('sp-freitext-wrap', pos && pos.name === 'Divers');
+  clearMsg('spesen-form-msg');
+  show('spesen-form-card', true);
+}
+
+el('btn-cancel-spesen').onclick = () => { show('spesen-form-card', false); editingSpesenId = null; };
+
+el('btn-save-spesen').onclick = async () => {
+  clearMsg('spesen-form-msg');
+  const datum = el('sp-datum').value;
+  const positionId = el('sp-position').value;
+  const anzahl = parseFloat(el('sp-anzahl').value || '0');
+  const stueckpreis = parseFloat(el('sp-stueckpreis').value || '0');
+  if (!datum) { setMsg('spesen-form-msg', 'Datum ist ein Pflichtfeld.', 'error'); return; }
+  const pos = spesenPositionen.find(p => p.id === positionId);
+  if (pos && pos.name === 'Divers' && !el('sp-freitext').value.trim()) {
+    setMsg('spesen-form-msg', 'Bei "Divers" ist eine Beschreibung nötig.', 'error');
+    return;
+  }
+
+  const payload = {
+    user_id: currentUser.id,
+    datum,
+    auftrag: el('sp-auftrag').value.trim() || null,
+    spesen_position_id: positionId,
+    freitext: el('sp-freitext').value.trim() || null,
+    anzahl,
+    stueckpreis,
+    kostenstelle_id: el('sp-kst').value || null,
+    mwst: el('sp-mwst').value ? parseFloat(el('sp-mwst').value) : null,
+    notizen: el('sp-notizen').value.trim() || null
+  };
+
+  let error;
+  if (editingSpesenId) {
+    ({ error } = await sb.from('spesen_eintrag').update(payload).eq('id', editingSpesenId));
+  } else {
+    ({ error } = await sb.from('spesen_eintrag').insert(payload));
+  }
+  if (error) { setMsg('spesen-form-msg', error.message, 'error'); return; }
+
+  show('spesen-form-card', false);
+  editingSpesenId = null;
+  await loadSpesenListe();
+};
+
+async function loadSpesenListe() {
+  const { data, error } = await sb
+    .from('spesen_eintrag')
+    .select('*, spesen_position:spesen_position_id(name, konto), kostenstelle:kostenstelle_id(name)')
+    .order('datum', { ascending: false });
+  if (error) { el('spesen-liste').innerHTML = `<div class="empty-hint">Fehler beim Laden: ${error.message}</div>`; return; }
+  renderSpesenListe(data);
+}
+
+let allSpesenRows = [];
+let selectedSpesenIds = new Set();
+
+function renderSpesenListe(rows) {
+  allSpesenRows = rows;
+  const container = el('spesen-liste');
+  show('spesen-export-bar', rows.length > 0);
+  updateSpesenSelectedCount();
+  if (!rows.length) { container.innerHTML = '<div class="empty-hint">Noch keine Spesen erfasst.</div>'; return; }
+
+  const summe = rows.reduce((s, r) => s + (r.anzahl * r.stueckpreis), 0);
+
+  let html = `<div class="day-header" style="border-radius:10px;margin-bottom:14px;">
+    <span class="date">Summe</span><span class="span">CHF ${summe.toFixed(2)}</span>
+  </div>`;
+
+  rows.forEach(r => {
+    const total = (r.anzahl * r.stueckpreis).toFixed(2);
+    const posName = r.spesen_position ? r.spesen_position.name : '–';
+    const posKonto = r.spesen_position && r.spesen_position.konto ? ' (' + r.spesen_position.konto + ')' : '';
+    const kstName = r.kostenstelle ? r.kostenstelle.name : null;
+    const dateStr = new Date(r.datum + 'T00:00:00').toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    html += `<div class="shift-row" style="border-top:1px solid var(--border);border-radius:0;">
+      <input type="checkbox" class="spesen-check" data-id="${r.id}" ${selectedSpesenIds.has(r.id) ? 'checked' : ''} style="margin-top:4px;width:auto;">
+      <div class="shift-main">
+        <div class="shift-title">${dateStr} · ${posName}${posKonto} · CHF ${total}</div>
+        <div class="shift-sub">${r.auftrag ? 'Auftrag: ' + r.auftrag + ' · ' : ''}${r.anzahl} × CHF ${Number(r.stueckpreis).toFixed(2)}${kstName ? ' · KST ' + kstName : ''}${r.mwst ? ' · MWST ' + r.mwst + '%' : ''}</div>
+        ${r.freitext ? `<div class="shift-sub">${r.freitext}</div>` : ''}
+        ${r.notizen ? `<div class="shift-sub">📝 ${r.notizen}</div>` : ''}
+      </div>
+      <div class="shift-actions">
+        <button class="secondary" onclick="editSpesen('${r.id}')" type="button">Bearbeiten</button>
+        <button class="danger" onclick="deleteSpesen('${r.id}')" type="button">Löschen</button>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = `<div class="day-group">${html}</div>`;
+}
+
+window.editSpesen = async (id) => {
+  const { data, error } = await sb.from('spesen_eintrag').select('*').eq('id', id).single();
+  if (error) { alert(error.message); return; }
+  openSpesenForm(data);
+};
+
+window.deleteSpesen = async (id) => {
+  if (!confirm('Diese Spesenposition wirklich löschen?')) return;
+  const { error } = await sb.from('spesen_eintrag').delete().eq('id', id);
+  if (error) { alert(error.message); return; }
+  await loadSpesenListe();
+};
+
+function updateSpesenSelectedCount() {
+  el('spesen-selected-count').textContent = selectedSpesenIds.size + ' ausgewählt (max. 15 pro Abrechnung)';
+}
+
+document.addEventListener('change', (e) => {
+  if (e.target.classList.contains('spesen-check')) {
+    const id = e.target.dataset.id;
+    if (e.target.checked) selectedSpesenIds.add(id); else selectedSpesenIds.delete(id);
+    updateSpesenSelectedCount();
+  }
+});
+
+el('btn-export-excel').onclick = async () => {
+  const rows = allSpesenRows.filter(r => selectedSpesenIds.has(r.id));
+  if (!rows.length) { alert('Bitte mindestens eine Spesenposition auswählen.'); return; }
+  if (rows.length > 15) { alert('Die Vorlage hat nur 15 Zeilen. Bitte Auswahl auf maximal 15 Positionen reduzieren (mehrere Abrechnungen für den Rest erstellen).'); return; }
+
+  const btn = el('btn-export-excel');
+  btn.disabled = true;
+  btn.textContent = 'Erstelle Datei…';
+  try {
+    rows.sort((a, b) => a.datum.localeCompare(b.datum));
+    const resp = await fetch('./Spesenabrechnung_Vorlage.xlsx');
+    if (!resp.ok) throw new Error('Vorlage nicht gefunden (Spesenabrechnung_Vorlage.xlsx muss neben index.html liegen).');
+    const buffer = await resp.arrayBuffer();
+    const workbook = await XlsxPopulate.fromDataAsync(buffer);
+    const sheet = workbook.sheet('Spesenabrechnung');
+
+    const name = currentProfile && currentProfile.name ? currentProfile.name : currentUser.email;
+    sheet.cell('B9').value(name);
+
+    rows.forEach((r, i) => {
+      const zeile = 12 + i;
+      const posName = r.spesen_position ? r.spesen_position.name : '';
+      const kstNummer = r.kostenstelle ? r.kostenstelle.nummer : '';
+      const dateStr = new Date(r.datum + 'T00:00:00').toLocaleDateString('de-CH');
+      sheet.cell('A' + zeile).value(dateStr);
+      sheet.cell('B' + zeile).value(r.anzahl);
+      sheet.cell('C' + zeile).value(r.auftrag || r.freitext || '');
+      sheet.cell('D' + zeile).value(posName);
+      sheet.cell('E' + zeile).value(r.stueckpreis);
+      if (kstNummer !== '') sheet.cell('H' + zeile).value(kstNummer);
+      if (r.mwst) sheet.cell('I' + zeile).value(r.mwst);
+    });
+
+    const blob = await workbook.outputAsync();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Spesenabrechnung_${name.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert('Fehler beim Excel-Export: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📊 Excel-Export erstellen';
+  }
+};
+
 /* --- Session-Check beim Laden --- */
+function getHashParams() {
+  const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+  return new URLSearchParams(hash);
+}
+
 (async () => {
+  const hashParams = getHashParams();
+  if (hashParams.get('error')) {
+    const desc = (hashParams.get('error_description') || 'Der Link ist ungültig oder abgelaufen.').replace(/\+/g, ' ');
+    setMsg('auth-msg', desc + ' Bitte fordere einen neuen Link an.', 'error');
+    history.replaceState(null, '', window.location.pathname);
+  }
+
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (session) await afterLogin();
