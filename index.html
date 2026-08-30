@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VENON Zeiterfassung – V1.1</title>
+<title>VENON Zeiterfassung – V1.2</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iRWJlbmVfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAyMDcuMyAyMDcuMyI+CiAgPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDMwLjcuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDIuMS40IEJ1aWxkIDExNCkgIC0tPgogIDxnIGlkPSJIaW50ZXJncnVuZCI+CiAgICA8Zz4KICAgICAgPHJlY3QgeD0iMi41IiB5PSIyLjUiIHdpZHRoPSIyMDIuMyIgaGVpZ2h0PSIyMDIuMyIgcng9IjM0LjgiIHJ5PSIzNC44IiBmaWxsPSIjMzUxMjM4Ii8+CiAgICAgIDxwYXRoIGQ9Ik0xNzAsNWMxNy44MSwwLDMyLjMsMTQuNDksMzIuMywzMi4zdjEzMi43YzAsMTcuODEtMTQuNDksMzIuMy0zMi4zLDMyLjNIMzcuM2MtMTcuODEsMC0zMi4zLTE0LjQ5LTMyLjMtMzIuM1YzNy4zQzUsMTkuNDksMTkuNDksNSwzNy4zLDVoMTMyLjdaTTE3MCwwSDM3LjNDMTYuNywwLDAsMTYuNywwLDM3LjN2MTMyLjdDMCwxOTAuNiwxNi43LDIwNy4zLDM3LjMsMjA3LjNoMTMyLjdjMjAuNiwwLDM3LjMtMTYuNywzNy4zLTM3LjNWMzcuM2MwLTIwLjYtMTYuNy0zNy4zLTM3LjMtMzcuM2gwWiIgZmlsbD0iIzlhZjUwMCIvPgogICAgPC9nPgogIDwvZz4KICA8cG9seWdvbiBwb2ludHM9Ijg1LjQ4IDQyLjE0IDk2LjQ1IDI5LjQ3IDYzLjU0IDI5LjQ3IDk5LjgzIDkyLjMyIDE0My43NiAxNi4yMyA5OS44MyA2Ni45OCA4NS40OCA0Mi4xNCIgZmlsbD0iIzlhZjUwMCIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgPHRleHQgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDYuNDUgMTgzLjQ3KSIgZmlsbD0iIzlhZjUwMCIgZm9udC1mYW1pbHk9IlF1YW50aWNvLUJvbGQsIFF1YW50aWNvIiBmb250LXdlaWdodD0iNzAwIiBmb250LXNpemU9IjEwMCI+PHRzcGFuIHg9IjAiIHk9IjAiPlpFPC90c3Bhbj48L3RleHQ+Cjwvc3ZnPg==">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-populate@1.21.0/browser/xlsx-populate.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,6 +40,16 @@
   }
   body.app-mode .card{ max-width:760px; }
   h1{font-family:'Quantico',sans-serif;font-size:1.4rem;margin:0 0 4px;letter-spacing:.02em;}
+  .header-banner{
+    background-image:url('data:image/jpeg;base64,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');
+    background-size:cover;background-position:center;
+    margin:-32px -32px 24px -32px;padding:22px 28px;
+    border-radius:12px 12px 0 0;
+    display:flex;align-items:center;gap:14px;
+  }
+  .header-banner svg{height:30px;width:30px;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));}
+  .header-banner h1{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);margin:0;}
+  .header-banner .version{color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.6);margin:0;}
   h2{font-family:'Quantico',sans-serif;font-size:1.05rem;margin:0 0 12px;}
   .version{color:var(--text-dim);font-size:.75rem;margin-bottom:24px;}
   p{line-height:1.5;color:var(--text-dim);font-size:.9rem;}
@@ -102,8 +113,13 @@
 
 <!-- ==================== AUTH CARD ==================== -->
 <div class="card" id="auth-card">
-  <h1>VENON Zeiterfassung</h1>
-  <div class="version">V1.1</div>
+  <div class="header-banner">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
+    <div>
+      <h1>VENON Zeiterfassung</h1>
+      <div class="version">V1.2</div>
+    </div>
+  </div>
 
   <div id="auth-section">
     <div class="tabs">
@@ -183,12 +199,15 @@
 
 <!-- ==================== APP SHELL ==================== -->
 <div class="card hidden" id="app-shell">
-  <div class="app-header">
-    <div>
-      <h1>VENON Zeiterfassung</h1>
-      <div class="version">V1.1 · <span id="user-email"></span></div>
+  <div class="header-banner" style="justify-content:space-between;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" style="height:30px;width:30px;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
+      <div>
+        <h1>VENON Zeiterfassung</h1>
+        <div class="version">V1.2 · <span id="user-email"></span></div>
+      </div>
     </div>
-    <button id="btn-logout" class="secondary" type="button">Ausloggen</button>
+    <button id="btn-logout" class="secondary" type="button" style="background:rgba(0,0,0,.35);">Ausloggen</button>
   </div>
 
   <div class="nav-tabs">
@@ -369,6 +388,18 @@
     <button id="btn-save-profil" class="block" type="button">Speichern</button>
     <div id="profil-msg" class="msg"></div>
     <p style="margin-top:20px;">Wohnadresse und Arbeitsweg werden in einer späteren Version genutzt, um bei ausserordentlichen Einsatzorten die abrechenbaren Kilometer automatisch zu berechnen.</p>
+
+    <h2 style="margin-top:32px;">Login-Daten</h2>
+    <label for="e-new-password">Neues Passwort</label>
+    <input type="password" id="e-new-password" autocomplete="new-password">
+    <button id="btn-change-password" class="secondary block" type="button">Passwort ändern</button>
+    <div id="password-change-msg" class="msg"></div>
+
+    <label for="e-new-email" style="margin-top:20px;">Neue E-Mail-Adresse</label>
+    <input type="email" id="e-new-email" autocomplete="email">
+    <button id="btn-change-email" class="secondary block" type="button">E-Mail ändern</button>
+    <div id="email-change-msg" class="msg"></div>
+    <p style="margin-top:12px;">Bei einer neuen E-Mail-Adresse schickt Supabase zur Bestätigung einen Link an die neue Adresse – das lässt sich aus Sicherheitsgründen nicht umgehen.</p>
   </div>
 </div>
 
@@ -396,6 +427,7 @@ let pendingFactorId = null;
 let pendingChallengeId = null;
 let enrollFactorId = null;
 let currentUser = null;
+let mfaPurpose = 'login';
 
 el('btn-toggle-pw').onclick = () => {
   const field = el('password');
@@ -435,18 +467,28 @@ el('btn-submit').onclick = async () => {
   await afterLogin();
 };
 
-async function afterLogin() {
-  const { data: aal, error: aalErr } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aalErr) { setMsg('auth-msg', aalErr.message, 'error'); return; }
-
+async function needsMfaChallenge() {
+  const { data: aal, error } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (error) return { error };
   if (aal.nextLevel === 'aal2' && aal.nextLevel !== aal.currentLevel) {
     const { data: factors, error: fErr } = await sb.auth.mfa.listFactors();
-    if (fErr) { setMsg('auth-msg', fErr.message, 'error'); return; }
+    if (fErr) return { error: fErr };
     const totpFactor = factors.totp[0];
     const { data: challenge, error: chErr } = await sb.auth.mfa.challenge({ factorId: totpFactor.id });
-    if (chErr) { setMsg('auth-msg', chErr.message, 'error'); return; }
+    if (chErr) return { error: chErr };
     pendingFactorId = totpFactor.id;
     pendingChallengeId = challenge.id;
+    return { needed: true };
+  }
+  return { needed: false };
+}
+
+async function afterLogin() {
+  const result = await needsMfaChallenge();
+  if (result.error) { setMsg('auth-msg', result.error.message, 'error'); return; }
+
+  if (result.needed) {
+    mfaPurpose = 'login';
     show('auth-section', false);
     show('mfa-challenge-section', true);
     return;
@@ -486,7 +528,11 @@ el('btn-verify-challenge').onclick = async () => {
   const { error } = await sb.auth.mfa.verify({ factorId: pendingFactorId, challengeId: pendingChallengeId, code });
   if (error) { setMsg('mfa-challenge-msg', error.message, 'error'); return; }
   show('mfa-challenge-section', false);
-  await enterApp();
+  if (mfaPurpose === 'recovery') {
+    show('reset-password-section', true);
+  } else {
+    await enterApp();
+  }
 };
 
 el('btn-forgot').onclick = () => {
@@ -513,13 +559,26 @@ el('btn-send-reset').onclick = async () => {
 };
 
 // Wird ausgelöst, wenn jemand über den Reset-Link auf die Seite zurückkommt
-sb.auth.onAuthStateChange((event) => {
+sb.auth.onAuthStateChange(async (event) => {
   if (event === 'PASSWORD_RECOVERY') {
     show('auth-section', false);
     show('forgot-section', false);
-    show('mfa-challenge-section', false);
     show('mfa-enroll-section', false);
-    show('reset-password-section', true);
+
+    const result = await needsMfaChallenge();
+    if (result.error) {
+      show('reset-password-section', true);
+      setMsg('reset-password-msg', result.error.message, 'error');
+      return;
+    }
+    if (result.needed) {
+      mfaPurpose = 'recovery';
+      show('mfa-challenge-section', true);
+      show('reset-password-section', false);
+    } else {
+      show('mfa-challenge-section', false);
+      show('reset-password-section', true);
+    }
   }
 });
 
@@ -654,6 +713,26 @@ el('btn-save-profil').onclick = async () => {
   if (error) { setMsg('profil-msg', error.message, 'error'); return; }
   currentProfile = payload;
   setMsg('profil-msg', 'Gespeichert.', 'ok');
+};
+
+el('btn-change-password').onclick = async () => {
+  clearMsg('password-change-msg');
+  const newPw = el('e-new-password').value;
+  if (!newPw || newPw.length < 6) { setMsg('password-change-msg', 'Mindestens 6 Zeichen.', 'error'); return; }
+  const { error } = await sb.auth.updateUser({ password: newPw });
+  if (error) { setMsg('password-change-msg', error.message, 'error'); return; }
+  el('e-new-password').value = '';
+  setMsg('password-change-msg', 'Passwort geändert.', 'ok');
+};
+
+el('btn-change-email').onclick = async () => {
+  clearMsg('email-change-msg');
+  const newEmail = el('e-new-email').value.trim();
+  if (!newEmail) { setMsg('email-change-msg', 'Bitte neue E-Mail eingeben.', 'error'); return; }
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await sb.auth.updateUser({ email: newEmail }, { emailRedirectTo: redirectTo });
+  if (error) { setMsg('email-change-msg', error.message, 'error'); return; }
+  setMsg('email-change-msg', 'Bestätigungslink wurde an die neue Adresse geschickt. Bitte dort bestätigen.', 'ok');
 };
 
 /* --- Kilometer-Rechner (openrouteservice / HeiGIT) --- */
