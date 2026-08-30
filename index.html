@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VENON Zeiterfassung – V1.4</title>
+<title>VENON Zeiterfassung – V1.6</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iRWJlbmVfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAyMDcuMyAyMDcuMyI+CiAgPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDMwLjcuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDIuMS40IEJ1aWxkIDExNCkgIC0tPgogIDxnIGlkPSJIaW50ZXJncnVuZCI+CiAgICA8Zz4KICAgICAgPHJlY3QgeD0iMi41IiB5PSIyLjUiIHdpZHRoPSIyMDIuMyIgaGVpZ2h0PSIyMDIuMyIgcng9IjM0LjgiIHJ5PSIzNC44IiBmaWxsPSIjMzUxMjM4Ii8+CiAgICAgIDxwYXRoIGQ9Ik0xNzAsNWMxNy44MSwwLDMyLjMsMTQuNDksMzIuMywzMi4zdjEzMi43YzAsMTcuODEtMTQuNDksMzIuMy0zMi4zLDMyLjNIMzcuM2MtMTcuODEsMC0zMi4zLTE0LjQ5LTMyLjMtMzIuM1YzNy4zQzUsMTkuNDksMTkuNDksNSwzNy4zLDVoMTMyLjdaTTE3MCwwSDM3LjNDMTYuNywwLDAsMTYuNywwLDM3LjN2MTMyLjdDMCwxOTAuNiwxNi43LDIwNy4zLDM3LjMsMjA3LjNoMTMyLjdjMjAuNiwwLDM3LjMtMTYuNywzNy4zLTM3LjNWMzcuM2MwLTIwLjYtMTYuNy0zNy4zLTM3LjMtMzcuM2gwWiIgZmlsbD0iIzlhZjUwMCIvPgogICAgPC9nPgogIDwvZz4KICA8cG9seWdvbiBwb2ludHM9Ijg1LjQ4IDQyLjE0IDk2LjQ1IDI5LjQ3IDYzLjU0IDI5LjQ3IDk5LjgzIDkyLjMyIDE0My43NiAxNi4yMyA5OS44MyA2Ni45OCA4NS40OCA0Mi4xNCIgZmlsbD0iIzlhZjUwMCIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgPHRleHQgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDYuNDUgMTgzLjQ3KSIgZmlsbD0iIzlhZjUwMCIgZm9udC1mYW1pbHk9IlF1YW50aWNvLUJvbGQsIFF1YW50aWNvIiBmb250LXdlaWdodD0iNzAwIiBmb250LXNpemU9IjEwMCI+PHRzcGFuIHg9IjAiIHk9IjAiPlpFPC90c3Bhbj48L3RleHQ+Cjwvc3ZnPg==">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-populate@1.21.0/browser/xlsx-populate.min.js"></script>
@@ -118,7 +118,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
     <div>
       <h1>VENON Zeiterfassung</h1>
-      <div class="version">V1.4</div>
+      <div class="version">V1.6</div>
     </div>
   </div>
 
@@ -132,7 +132,9 @@
     <label for="password">Passwort</label>
     <div style="position:relative;">
       <input type="password" id="password" autocomplete="current-password" style="padding-right:44px;">
-      <button type="button" id="btn-toggle-pw" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;padding:6px;margin:0;color:var(--text-dim);cursor:pointer;font-size:1rem;">👁</button>
+      <button type="button" id="btn-toggle-pw" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;padding:6px;margin:0;color:var(--text-dim);cursor:pointer;display:flex;">
+        <svg id="pw-eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="18" height="18"><path fill="none" stroke="currentColor" stroke-width="4" stroke-miterlimit="10" d="M1,32c0,0,11,15,31,15s31-15,31-15S52,17,32,17S1,32,1,32z"/><circle fill="none" stroke="currentColor" stroke-width="4" stroke-miterlimit="10" cx="32" cy="32" r="7"/></svg>
+      </button>
     </div>
     <button id="btn-submit" class="block" type="button">Einloggen</button>
     <button id="btn-forgot" class="forgot-link" type="button">Passwort vergessen?</button>
@@ -206,7 +208,7 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" style="height:30px;width:30px;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
       <div>
         <h1>VENON Zeiterfassung</h1>
-        <div class="version">V1.4 · <span id="user-email"></span></div>
+        <div class="version">V1.6 · <span id="user-email"></span></div>
       </div>
     </div>
     <button id="btn-logout" class="secondary" type="button" style="background:rgba(0,0,0,.35);">Ausloggen</button>
@@ -245,8 +247,8 @@
 
       <div class="row2">
         <div>
-          <label for="f-pause">Pause (Minuten)</label>
-          <input type="number" id="f-pause" min="0" step="5" value="0">
+          <label for="f-pause">Pause (hh:mm)</label>
+          <input type="text" id="f-pause" placeholder="z.B. 90, 1.5 oder 01:30" value="00:00">
         </div>
         <div>
           <label for="f-standort">Standort</label>
@@ -281,7 +283,7 @@
       <input type="number" id="f-km" min="0" step="0.1">
 
       <div class="form-card" style="margin-top:14px;margin-bottom:0;">
-        <h2 style="font-size:.9rem;">📍 Kilometer berechnen</h2>
+        <h2 style="font-size:.9rem;">Kilometer berechnen</h2>
         <div class="row2">
           <div>
             <label for="km-start">Start</label>
@@ -301,7 +303,7 @@
       <label for="f-notizen">Notizen</label>
       <textarea id="f-notizen"></textarea>
 
-      <button id="btn-goto-spesen" class="secondary block" type="button">💰 Spesenposition aus dieser Schicht erfassen →</button>
+      <button id="btn-goto-spesen" class="secondary block" type="button">Spesenposition aus dieser Schicht erfassen →</button>
 
       <div class="form-actions">
         <button id="btn-save-schicht" type="button">Speichern</button>
@@ -312,7 +314,7 @@
 
     <div id="schicht-export-bar" class="hidden" style="display:flex;gap:12px;align-items:center;margin:14px 0;">
       <span id="schicht-selected-count" style="color:var(--text-dim);font-size:.85rem;"></span>
-      <button id="btn-export-txt" class="secondary" type="button" style="flex:0;">📄 TXT-Nachweis erstellen</button>
+      <button id="btn-export-txt" class="secondary" type="button" style="padding:8px 22px;white-space:nowrap;">TXT-Nachweis erstellen</button>
     </div>
     <div id="schicht-liste"></div>
   </div>
@@ -456,7 +458,7 @@ let mfaPurpose = 'login';
 el('btn-toggle-pw').onclick = () => {
   const field = el('password');
   field.type = field.type === 'password' ? 'text' : 'password';
-  el('btn-toggle-pw').textContent = field.type === 'password' ? '👁' : '🙈';
+  el('pw-eye-icon').style.opacity = field.type === 'password' ? '1' : '.4';
 };
 
 el('tab-login').onclick = () => {
@@ -899,8 +901,25 @@ function fmtTime(d) {
   return d.toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' });
 }
 function fmtDur(minuten) {
-  const h = Math.floor(minuten / 60), m = Math.round(minuten % 60);
-  return h + 'h' + (m ? ' ' + String(m).padStart(2, '0') + 'min' : '');
+  const totalMin = Math.round(minuten);
+  const h = Math.floor(totalMin / 60), m = totalMin % 60;
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+}
+
+// Flexible Dauer-Eingabe wie in Rentman: "90", "1.5" oder "01:30" -> immer Minuten bzw. HH:MM
+function parseFlexibleDuration(raw) {
+  if (!raw) return 0;
+  raw = String(raw).trim();
+  if (!raw) return 0;
+  if (raw.includes(':')) {
+    const [h, m] = raw.split(':').map(s => parseInt(s || '0', 10));
+    return (h || 0) * 60 + (m || 0);
+  }
+  const normalized = raw.replace(',', '.');
+  const num = parseFloat(normalized);
+  if (isNaN(num)) return 0;
+  // Zahl mit Dezimalpunkt = Stunden (z.B. 1.5 -> 90min), ganze Zahl = Minuten (z.B. 90 -> 90min)
+  return normalized.includes('.') ? Math.round(num * 60) : Math.round(num);
 }
 function fmtDayHeader(d) {
   return d.toLocaleDateString('de-CH', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -1083,13 +1102,17 @@ let allSchichten = [];
 
 el('btn-neue-schicht').onclick = () => openForm(null);
 
+el('f-pause').addEventListener('blur', () => {
+  el('f-pause').value = fmtDur(parseFlexibleDuration(el('f-pause').value));
+});
+
 function openForm(row) {
   editingId = row ? row.id : null;
   el('form-title').textContent = row ? 'Schicht bearbeiten' : 'Neue Schicht';
   el('f-status').value = row ? row.status : 'geplant';
   el('f-start').value = row ? toLocalInputValue(row.start_zeit) : '';
   el('f-end').value = row ? toLocalInputValue(row.end_zeit) : '';
-  el('f-pause').value = row ? row.pause_minuten : 0;
+  el('f-pause').value = row ? fmtDur(row.pause_minuten || 0) : '00:00';
   el('f-standort').value = row ? row.standort_id : ((currentProfile && currentProfile.standard_arbeitsort_id) || (standorte[0] ? standorte[0].id : ''));
   el('f-projekt-nr').value = row ? (row.projekt_nummer || '') : '';
   el('f-projekt-name').value = row ? (row.projekt_name || '') : '';
@@ -1125,7 +1148,7 @@ el('btn-save-schicht').onclick = async () => {
     status: el('f-status').value,
     start_zeit: new Date(start).toISOString(),
     end_zeit: new Date(end).toISOString(),
-    pause_minuten: parseInt(el('f-pause').value || '0', 10),
+    pause_minuten: parseFlexibleDuration(el('f-pause').value),
     standort_id: el('f-standort').value || null,
     projekt_nummer: el('f-projekt-nr').value.trim() || null,
     projekt_name: el('f-projekt-name').value.trim() || null,
