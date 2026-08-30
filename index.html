@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VENON Zeiterfassung – V1.3</title>
+<title>VENON Zeiterfassung – V1.4</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iRWJlbmVfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAyMDcuMyAyMDcuMyI+CiAgPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDMwLjcuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDIuMS40IEJ1aWxkIDExNCkgIC0tPgogIDxnIGlkPSJIaW50ZXJncnVuZCI+CiAgICA8Zz4KICAgICAgPHJlY3QgeD0iMi41IiB5PSIyLjUiIHdpZHRoPSIyMDIuMyIgaGVpZ2h0PSIyMDIuMyIgcng9IjM0LjgiIHJ5PSIzNC44IiBmaWxsPSIjMzUxMjM4Ii8+CiAgICAgIDxwYXRoIGQ9Ik0xNzAsNWMxNy44MSwwLDMyLjMsMTQuNDksMzIuMywzMi4zdjEzMi43YzAsMTcuODEtMTQuNDksMzIuMy0zMi4zLDMyLjNIMzcuM2MtMTcuODEsMC0zMi4zLTE0LjQ5LTMyLjMtMzIuM1YzNy4zQzUsMTkuNDksMTkuNDksNSwzNy4zLDVoMTMyLjdaTTE3MCwwSDM3LjNDMTYuNywwLDAsMTYuNywwLDM3LjN2MTMyLjdDMCwxOTAuNiwxNi43LDIwNy4zLDM3LjMsMjA3LjNoMTMyLjdjMjAuNiwwLDM3LjMtMTYuNywzNy4zLTM3LjNWMzcuM2MwLTIwLjYtMTYuNy0zNy4zLTM3LjMtMzcuM2gwWiIgZmlsbD0iIzlhZjUwMCIvPgogICAgPC9nPgogIDwvZz4KICA8cG9seWdvbiBwb2ludHM9Ijg1LjQ4IDQyLjE0IDk2LjQ1IDI5LjQ3IDYzLjU0IDI5LjQ3IDk5LjgzIDkyLjMyIDE0My43NiAxNi4yMyA5OS44MyA2Ni45OCA4NS40OCA0Mi4xNCIgZmlsbD0iIzlhZjUwMCIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgPHRleHQgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDYuNDUgMTgzLjQ3KSIgZmlsbD0iIzlhZjUwMCIgZm9udC1mYW1pbHk9IlF1YW50aWNvLUJvbGQsIFF1YW50aWNvIiBmb250LXdlaWdodD0iNzAwIiBmb250LXNpemU9IjEwMCI+PHRzcGFuIHg9IjAiIHk9IjAiPlpFPC90c3Bhbj48L3RleHQ+Cjwvc3ZnPg==">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-populate@1.21.0/browser/xlsx-populate.min.js"></script>
@@ -118,7 +118,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
     <div>
       <h1>VENON Zeiterfassung</h1>
-      <div class="version">V1.3</div>
+      <div class="version">V1.4</div>
     </div>
   </div>
 
@@ -206,7 +206,7 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" style="height:30px;width:30px;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
       <div>
         <h1>VENON Zeiterfassung</h1>
-        <div class="version">V1.3 · <span id="user-email"></span></div>
+        <div class="version">V1.4 · <span id="user-email"></span></div>
       </div>
     </div>
     <button id="btn-logout" class="secondary" type="button" style="background:rgba(0,0,0,.35);">Ausloggen</button>
@@ -677,11 +677,18 @@ let regeln = [];
 
 async function loadStandorte() {
   const { data, error } = await sb.from('standort').select('id, name, adresse').order('name');
-  if (error) { console.error(error); return; }
+  if (error) {
+    console.error(error);
+    el('schicht-liste').innerHTML = `<div class="empty-hint">Standorte konnten nicht geladen werden: ${error.message}</div>`;
+    return;
+  }
   standorte = data;
   const sel = el('f-standort');
   sel.innerHTML = standorte.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
   el('e-arbeitsort').innerHTML = standorte.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  if (standorte.length === 0) {
+    el('schicht-liste').innerHTML = '<div class="empty-hint">Keine Standorte in der Datenbank gefunden (Tabelle "standort" ist leer). Bitte im SQL Editor prüfen.</div>';
+  }
   populateKmSelects();
 }
 
