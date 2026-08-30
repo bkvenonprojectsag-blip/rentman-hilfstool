@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VENON Zeiterfassung – V1.6</title>
+<title>Rentman Hilfstool – V1.8</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iRWJlbmVfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAyMDcuMyAyMDcuMyI+CiAgPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDMwLjcuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDIuMS40IEJ1aWxkIDExNCkgIC0tPgogIDxnIGlkPSJIaW50ZXJncnVuZCI+CiAgICA8Zz4KICAgICAgPHJlY3QgeD0iMi41IiB5PSIyLjUiIHdpZHRoPSIyMDIuMyIgaGVpZ2h0PSIyMDIuMyIgcng9IjM0LjgiIHJ5PSIzNC44IiBmaWxsPSIjMzUxMjM4Ii8+CiAgICAgIDxwYXRoIGQ9Ik0xNzAsNWMxNy44MSwwLDMyLjMsMTQuNDksMzIuMywzMi4zdjEzMi43YzAsMTcuODEtMTQuNDksMzIuMy0zMi4zLDMyLjNIMzcuM2MtMTcuODEsMC0zMi4zLTE0LjQ5LTMyLjMtMzIuM1YzNy4zQzUsMTkuNDksMTkuNDksNSwzNy4zLDVoMTMyLjdaTTE3MCwwSDM3LjNDMTYuNywwLDAsMTYuNywwLDM3LjN2MTMyLjdDMCwxOTAuNiwxNi43LDIwNy4zLDM3LjMsMjA3LjNoMTMyLjdjMjAuNiwwLDM3LjMtMTYuNywzNy4zLTM3LjNWMzcuM2MwLTIwLjYtMTYuNy0zNy4zLTM3LjMtMzcuM2gwWiIgZmlsbD0iIzlhZjUwMCIvPgogICAgPC9nPgogIDwvZz4KICA8cG9seWdvbiBwb2ludHM9Ijg1LjQ4IDQyLjE0IDk2LjQ1IDI5LjQ3IDYzLjU0IDI5LjQ3IDk5LjgzIDkyLjMyIDE0My43NiAxNi4yMyA5OS44MyA2Ni45OCA4NS40OCA0Mi4xNCIgZmlsbD0iIzlhZjUwMCIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgPHRleHQgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDYuNDUgMTgzLjQ3KSIgZmlsbD0iIzlhZjUwMCIgZm9udC1mYW1pbHk9IlF1YW50aWNvLUJvbGQsIFF1YW50aWNvIiBmb250LXdlaWdodD0iNzAwIiBmb250LXNpemU9IjEwMCI+PHRzcGFuIHg9IjAiIHk9IjAiPlpFPC90c3Bhbj48L3RleHQ+Cjwvc3ZnPg==">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-populate@1.21.0/browser/xlsx-populate.min.js"></script>
@@ -117,8 +117,8 @@
   <div class="header-banner">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
     <div>
-      <h1>VENON Zeiterfassung</h1>
-      <div class="version">V1.6</div>
+      <h1>Rentman Hilfstool</h1>
+      <div class="version">V1.8</div>
     </div>
   </div>
 
@@ -207,8 +207,8 @@
     <div style="display:flex;align-items:center;gap:14px;">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" style="height:30px;width:30px;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
       <div>
-        <h1>VENON Zeiterfassung</h1>
-        <div class="version">V1.6 · <span id="user-email"></span></div>
+        <h1>Rentman Hilfstool</h1>
+        <div class="version">V1.8 · <span id="user-email"></span></div>
       </div>
     </div>
     <button id="btn-logout" class="secondary" type="button" style="background:rgba(0,0,0,.35);">Ausloggen</button>
@@ -218,6 +218,7 @@
     <button id="nav-schichten" class="active" type="button">Schichten</button>
     <button id="nav-spesen" type="button">Spesen</button>
     <button id="nav-einstellungen" type="button">⚙ Einstellungen</button>
+    <button id="nav-support" type="button">Support</button>
   </div>
 
   <!-- TAB: SCHICHTEN -->
@@ -279,12 +280,21 @@
         </div>
       </div>
 
-      <label for="f-km">Kilometer (abzüglich Arbeitsweg)</label>
+      <label for="f-km">Total Kilometer (abzüglich Arbeitsweg)</label>
       <input type="number" id="f-km" min="0" step="0.1">
 
       <div class="form-card" style="margin-top:14px;margin-bottom:0;">
-        <h2 style="font-size:.9rem;">Kilometer berechnen</h2>
-        <div class="row2">
+        <h2 style="font-size:.9rem;">Kilometer eintragen</h2>
+        <label for="km-titel">Titel</label>
+        <select id="km-titel">
+          <option value="anreise">Anreise</option>
+          <option value="zwischenfahrt">Zwischenfahrt</option>
+          <option value="andere">Andere Fahrt…</option>
+          <option value="rueckreise">Rückreise</option>
+        </select>
+        <input type="text" id="km-titel-custom" placeholder="Bezeichnung eingeben" class="hidden" style="margin-top:8px;">
+
+        <div class="row2" style="margin-top:14px;">
           <div>
             <label for="km-start">Start</label>
             <select id="km-start"></select>
@@ -296,9 +306,34 @@
             <input type="text" id="km-ziel-custom" placeholder="Adresse eingeben" class="hidden" style="margin-top:8px;">
           </div>
         </div>
-        <button id="btn-calc-km" class="secondary block" type="button">Berechnen</button>
+        <button id="btn-calc-km" class="secondary block" type="button">Eintragen und zu neuer Spesenposition hinzufügen</button>
         <div id="km-calc-msg" class="msg"></div>
+        <div id="fahrten-liste"></div>
       </div>
+
+      <div class="form-card" style="margin-top:14px;margin-bottom:0;">
+        <h2 style="font-size:.9rem;">Spesen erfassen</h2>
+        <label for="sp-inline-position">Position</label>
+        <select id="sp-inline-position"></select>
+        <div id="sp-inline-freitext-wrap" class="hidden">
+          <label for="sp-inline-freitext">Beschreibung (bei "Divers" Pflichtfeld)</label>
+          <input type="text" id="sp-inline-freitext">
+        </div>
+        <div class="row2">
+          <div>
+            <label for="sp-inline-anzahl">Anzahl</label>
+            <input type="number" id="sp-inline-anzahl" min="0" step="0.01" value="1">
+          </div>
+          <div>
+            <label for="sp-inline-stueckpreis">Stückpreis (CHF)</label>
+            <input type="number" id="sp-inline-stueckpreis" min="0" step="0.05">
+          </div>
+        </div>
+        <button id="btn-add-inline-spesen" class="secondary block" type="button">Eintragen und zu neuer Spesenposition hinzufügen</button>
+        <div id="inline-spesen-msg" class="msg"></div>
+        <div id="inline-spesen-liste"></div>
+      </div>
+
 
       <label for="f-notizen">Notizen</label>
       <textarea id="f-notizen"></textarea>
@@ -314,7 +349,7 @@
 
     <div id="schicht-export-bar" class="hidden" style="display:flex;gap:12px;align-items:center;margin:14px 0;">
       <span id="schicht-selected-count" style="color:var(--text-dim);font-size:.85rem;"></span>
-      <button id="btn-export-txt" class="secondary" type="button" style="padding:8px 22px;white-space:nowrap;">TXT-Nachweis erstellen</button>
+      <button id="btn-export-txt" class="secondary" type="button" style="padding:8px 22px;white-space:nowrap;">Schichtnachweis erstellen (TXT-Datei)</button>
     </div>
     <div id="schicht-liste"></div>
   </div>
@@ -370,7 +405,7 @@
 
     <div id="spesen-export-bar" class="hidden" style="display:flex;gap:12px;align-items:center;margin:14px 0;">
       <span id="spesen-selected-count" style="color:var(--text-dim);font-size:.85rem;"></span>
-      <button id="btn-export-excel" class="secondary" type="button" style="flex:0;">📊 Excel-Export erstellen</button>
+      <button id="btn-export-excel" class="secondary" type="button" style="padding:8px 22px;white-space:nowrap;">Spesenabrechnung erstellen (Excel-Datei)</button>
     </div>
     <div id="spesen-liste"></div>
   </div>
@@ -403,6 +438,18 @@
     <button id="btn-change-email" class="secondary block" type="button">E-Mail ändern</button>
     <div id="email-change-msg" class="msg"></div>
     <p style="margin-top:12px;">Bei einer neuen E-Mail-Adresse schickt Supabase zur Bestätigung einen Link an die neue Adresse – das lässt sich aus Sicherheitsgründen nicht umgehen.</p>
+  </div>
+
+  <!-- TAB: SUPPORT -->
+  <div id="tab-support" class="hidden">
+    <h2>Support</h2>
+    <p>Bei Fragen oder Problemen mit dem Rentman Hilfstool direkt Benjamin Knaus kontaktieren:</p>
+    <a href="mailto:benjamin.knaus@venon.ch?subject=Support%20Rentman%20Hilfstool" style="text-decoration:none;">
+      <button class="block" type="button">E-Mail senden</button>
+    </a>
+    <a href="https://teams.microsoft.com/l/chat/0/0?users=benjamin.knaus@venon.ch" target="_blank" rel="noopener" style="text-decoration:none;">
+      <button class="secondary block" type="button">Teams-Chat öffnen</button>
+    </a>
   </div>
 
   <div class="footer-logo">
@@ -528,7 +575,7 @@ async function afterLogin() {
 }
 
 async function startEnrollment() {
-  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'VENON Zeiterfassung' });
+  const { data, error } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Rentman Hilfstool' });
   if (error) { setMsg('auth-msg', error.message, 'error'); return; }
   enrollFactorId = data.id;
   el('qr-img').src = data.totp.qr_code;
@@ -654,24 +701,14 @@ async function enterApp() {
 }
 
 /* --- Navigation --- */
-el('nav-schichten').onclick = () => {
-  el('nav-schichten').classList.add('active');
-  el('nav-spesen').classList.remove('active');
-  el('nav-einstellungen').classList.remove('active');
-  show('tab-schichten', true); show('tab-spesen', false); show('tab-einstellungen', false);
-};
-el('nav-spesen').onclick = () => {
-  el('nav-spesen').classList.add('active');
-  el('nav-schichten').classList.remove('active');
-  el('nav-einstellungen').classList.remove('active');
-  show('tab-spesen', true); show('tab-schichten', false); show('tab-einstellungen', false);
-};
-el('nav-einstellungen').onclick = () => {
-  el('nav-einstellungen').classList.add('active');
-  el('nav-schichten').classList.remove('active');
-  el('nav-spesen').classList.remove('active');
-  show('tab-einstellungen', true); show('tab-schichten', false); show('tab-spesen', false);
-};
+const NAV_TABS = ['schichten', 'spesen', 'einstellungen', 'support'];
+function switchTab(active) {
+  NAV_TABS.forEach(t => {
+    el('nav-' + t).classList.toggle('active', t === active);
+    show('tab-' + t, t === active);
+  });
+}
+NAV_TABS.forEach(t => { el('nav-' + t).onclick = () => switchTab(t); });
 
 /* --- Stammdaten laden --- */
 let standorte = [];
@@ -831,6 +868,103 @@ function resolveKmAddress(selectId, customId) {
   return { address: s ? s.adresse : null, isHome: false };
 }
 
+const FAHRT_TITEL = { anreise: 'Anreise', zwischenfahrt: 'Zwischenfahrt', andere: 'Andere Fahrt', rueckreise: 'Rückreise' };
+const FAHRT_ORDER = ['anreise', 'zwischenfahrt', 'andere', 'rueckreise'];
+let currentFahrten = [];
+
+el('km-titel').addEventListener('change', () => {
+  show('km-titel-custom', el('km-titel').value === 'andere');
+});
+
+function renderFahrtenListe() {
+  const container = el('fahrten-liste');
+  if (!currentFahrten.length) { container.innerHTML = ''; return; }
+  const sorted = [...currentFahrten].sort((a, b) => FAHRT_ORDER.indexOf(a.typ) - FAHRT_ORDER.indexOf(b.typ));
+  container.innerHTML = sorted.map(f => {
+    const idx = currentFahrten.indexOf(f);
+    const label = f.typ === 'andere' ? (f.bezeichnung || 'Andere Fahrt') : FAHRT_TITEL[f.typ];
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--border);font-size:.85rem;">
+      <span>${label}: ${f.km.toFixed(1)} km</span>
+      <button type="button" onclick="removeFahrt(${idx})" style="background:none;border:none;color:var(--error);padding:2px 8px;cursor:pointer;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+window.removeFahrt = async (idx) => {
+  const f = currentFahrten[idx];
+  if (f && f.spesenId) {
+    await sb.from('spesen_eintrag').delete().eq('id', f.spesenId);
+  }
+  currentFahrten.splice(idx, 1);
+  el('f-km').value = currentFahrten.reduce((s, f) => s + f.km, 0).toFixed(1);
+  renderFahrtenListe();
+};
+
+/* --- Generische Spesen-Erfassung direkt in der Schicht --- */
+let currentSpesenInline = [];
+
+el('sp-inline-position').addEventListener('change', () => {
+  const pos = spesenPositionen.find(p => p.id === el('sp-inline-position').value);
+  show('sp-inline-freitext-wrap', pos && pos.name === 'Divers');
+});
+
+function renderInlineSpesenListe() {
+  const container = el('inline-spesen-liste');
+  if (!currentSpesenInline.length) { container.innerHTML = ''; return; }
+  container.innerHTML = currentSpesenInline.map((s, idx) => {
+    const total = (s.anzahl * s.stueckpreis).toFixed(2);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--border);font-size:.85rem;">
+      <span>${s.label}: CHF ${total}</span>
+      <button type="button" onclick="removeInlineSpesen(${idx})" style="background:none;border:none;color:var(--error);padding:2px 8px;cursor:pointer;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+window.removeInlineSpesen = async (idx) => {
+  const s = currentSpesenInline[idx];
+  if (s && s.spesenId) {
+    await sb.from('spesen_eintrag').delete().eq('id', s.spesenId);
+  }
+  currentSpesenInline.splice(idx, 1);
+  renderInlineSpesenListe();
+};
+
+el('btn-add-inline-spesen').onclick = async () => {
+  clearMsg('inline-spesen-msg');
+  const positionId = el('sp-inline-position').value;
+  const pos = spesenPositionen.find(p => p.id === positionId);
+  const anzahl = parseFloat(el('sp-inline-anzahl').value || '0');
+  const stueckpreis = parseFloat(el('sp-inline-stueckpreis').value || '0');
+  const freitext = el('sp-inline-freitext').value.trim();
+
+  if (!positionId) { setMsg('inline-spesen-msg', 'Bitte eine Position wählen.', 'error'); return; }
+  if (pos && pos.name === 'Divers' && !freitext) { setMsg('inline-spesen-msg', 'Bei "Divers" ist eine Beschreibung nötig.', 'error'); return; }
+  if (!stueckpreis) { setMsg('inline-spesen-msg', 'Bitte einen Stückpreis eingeben.', 'error'); return; }
+
+  const projektTeil = [el('f-projekt-nr').value.trim(), el('f-projekt-name').value.trim()].filter(Boolean).join(' - ');
+  const datum = el('f-start').value ? el('f-start').value.slice(0, 10) : new Date().toISOString().slice(0, 10);
+
+  const { data: inserted, error } = await sb.from('spesen_eintrag').insert({
+    user_id: currentUser.id,
+    schicht_id: editingId || null,
+    datum,
+    auftrag: projektTeil || null,
+    spesen_position_id: positionId,
+    freitext: freitext || null,
+    anzahl,
+    stueckpreis
+  }).select().single();
+
+  if (error) { setMsg('inline-spesen-msg', error.message, 'error'); return; }
+
+  currentSpesenInline.push({ spesenId: inserted.id, label: pos ? pos.name : 'Spesen', anzahl, stueckpreis });
+  renderInlineSpesenListe();
+  setMsg('inline-spesen-msg', 'Spesenposition erfasst.', 'ok');
+  el('sp-inline-anzahl').value = 1;
+  el('sp-inline-stueckpreis').value = '';
+  el('sp-inline-freitext').value = '';
+};
+
 el('btn-calc-km').onclick = async () => {
   clearMsg('km-calc-msg');
   const start = resolveKmAddress('km-start', 'km-start-custom');
@@ -841,26 +975,50 @@ el('btn-calc-km').onclick = async () => {
     return;
   }
 
+  const typ = el('km-titel').value;
+  const bezeichnung = typ === 'andere' ? (el('km-titel-custom').value.trim() || 'Andere Fahrt') : FAHRT_TITEL[typ];
+
   el('btn-calc-km').disabled = true;
   el('btn-calc-km').textContent = 'Berechne…';
   try {
     const [coordA, coordB] = await Promise.all([geocodeAddress(start.address), geocodeAddress(ziel.address)]);
     let km = await routeDistanceKm(coordA, coordB);
 
-    let hinweis = `Strecke ${start.address} → ${ziel.address}: ${km.toFixed(1)} km`;
+    let hinweis = `${bezeichnung}: ${start.address} → ${ziel.address}: ${km.toFixed(1)} km`;
     if ((start.isHome || ziel.isHome) && currentProfile && currentProfile.normaler_arbeitsweg_km) {
       const abzug = currentProfile.normaler_arbeitsweg_km;
       const abrechenbar = Math.max(0, km - abzug);
       hinweis += ` · abzüglich normaler Arbeitsweg (${abzug} km) = ${abrechenbar.toFixed(1)} km abrechenbar`;
       km = abrechenbar;
     }
-    el('f-km').value = km.toFixed(1);
+
+    // Automatisch eine Spesenposition dafür anlegen
+    const kmPos = spesenPositionen.find(p => p.name === 'Auftrag - Fahr- und Parkspesen');
+    let spesenId = null;
+    if (kmPos) {
+      const projektTeil = [el('f-projekt-nr').value.trim(), el('f-projekt-name').value.trim()].filter(Boolean).join(' - ');
+      const datum = el('f-start').value ? el('f-start').value.slice(0, 10) : new Date().toISOString().slice(0, 10);
+      const { data: inserted } = await sb.from('spesen_eintrag').insert({
+        user_id: currentUser.id,
+        schicht_id: editingId || null,
+        datum,
+        auftrag: bezeichnung + (projektTeil ? ' · ' + projektTeil : ''),
+        spesen_position_id: kmPos.id,
+        anzahl: km,
+        stueckpreis: kmAnsatz
+      }).select().single();
+      if (inserted) spesenId = inserted.id;
+    }
+
+    currentFahrten.push({ typ, bezeichnung, km, spesenId });
+    el('f-km').value = currentFahrten.reduce((s, f) => s + f.km, 0).toFixed(1);
+    renderFahrtenListe();
     setMsg('km-calc-msg', hinweis, 'ok');
   } catch (e) {
     setMsg('km-calc-msg', e.message, 'error');
   } finally {
     el('btn-calc-km').disabled = false;
-    el('btn-calc-km').textContent = 'Berechnen';
+    el('btn-calc-km').textContent = 'Eintragen und zu neuer Spesenposition hinzufügen';
   }
 };
 
@@ -951,7 +1109,7 @@ el('btn-export-txt').onclick = () => {
 
   const name = currentProfile && currentProfile.name ? currentProfile.name : currentUser.email;
   let lines = [];
-  lines.push('VENON Zeiterfassung – Nachweis');
+  lines.push('Rentman Hilfstool – Nachweis');
   lines.push('Mitarbeiter: ' + name);
   lines.push('Erstellt am: ' + new Date().toLocaleDateString('de-CH'));
   lines.push('');
@@ -1042,12 +1200,22 @@ function renderSchichten(rows) {
           nachtHtml = `<div class="night-hint">🌙 davon ${fmtDur(nacht.minuten)} Nachtzuschlag (+${nacht.prozent}%) · effektive Endzeit unverändert ${fmtTime(end)}</div>`;
         }
 
+        let fahrtenHtml = '';
+        if (r.fahrten && r.fahrten.length) {
+          const sorted = [...r.fahrten].sort((a, b) => FAHRT_ORDER.indexOf(a.typ) - FAHRT_ORDER.indexOf(b.typ));
+          fahrtenHtml = sorted.map(f => {
+            const label = f.typ === 'andere' ? (f.bezeichnung || 'Andere Fahrt') : FAHRT_TITEL[f.typ];
+            return `${label} ${f.km.toFixed(1)} km`;
+          }).join(' · ');
+        }
+
         html += `<div class="shift-row">
           <input type="checkbox" class="schicht-check" data-id="${r.id}" ${selectedSchichtIds.has(r.id) ? 'checked' : ''} style="margin-top:4px;width:auto;">
           <div class="shift-main">
             <div class="shift-title">${STATUS_ICON[r.status]} ${fmtTime(start)} – ${fmtTime(end)} · ${fmtDur(nettoMin)} · ${standortName}</div>
             <div class="shift-sub">${r.projekt_nummer ? r.projekt_nummer + ' - ' : ''}${r.projekt_name || ''} ${r.funktion ? '· ' + r.funktion : ''}</div>
-            <div class="shift-sub">Pause ${r.pause_minuten || 0}min${r.kilometer ? ' · ' + r.kilometer + ' km' : ''}</div>
+            <div class="shift-sub">Pause ${r.pause_minuten || 0}min${r.kilometer ? ' · Total ' + r.kilometer + ' km' : ''}</div>
+            ${fahrtenHtml ? `<div class="shift-sub">${fahrtenHtml}</div>` : ''}
             ${nachtHtml}
             ${r.notizen ? `<div class="shift-sub">📝 ${r.notizen}</div>` : ''}
           </div>
@@ -1106,7 +1274,7 @@ el('f-pause').addEventListener('blur', () => {
   el('f-pause').value = fmtDur(parseFlexibleDuration(el('f-pause').value));
 });
 
-function openForm(row) {
+async function openForm(row) {
   editingId = row ? row.id : null;
   el('form-title').textContent = row ? 'Schicht bearbeiten' : 'Neue Schicht';
   el('f-status').value = row ? row.status : 'geplant';
@@ -1122,6 +1290,27 @@ function openForm(row) {
   el('f-notizen').value = row ? (row.notizen || '') : '';
   clearMsg('schicht-form-msg');
   clearMsg('km-calc-msg');
+  currentFahrten = row && row.fahrten ? row.fahrten : [];
+  renderFahrtenListe();
+  currentSpesenInline = [];
+  if (row) {
+    const { data: linked } = await sb.from('spesen_eintrag')
+      .select('*, spesen_position:spesen_position_id(name)')
+      .eq('schicht_id', row.id);
+    if (linked) {
+      linked.filter(s => !s.spesen_position || s.spesen_position.name !== 'Auftrag - Fahr- und Parkspesen')
+        .forEach(s => currentSpesenInline.push({ spesenId: s.id, label: s.spesen_position ? s.spesen_position.name : 'Spesen', anzahl: s.anzahl, stueckpreis: s.stueckpreis }));
+    }
+  }
+  renderInlineSpesenListe();
+  el('sp-inline-position').selectedIndex = 0;
+  el('sp-inline-anzahl').value = 1;
+  el('sp-inline-stueckpreis').value = '';
+  el('sp-inline-freitext').value = '';
+  show('sp-inline-freitext-wrap', false);
+  clearMsg('inline-spesen-msg');
+  el('km-titel').value = 'anreise';
+  show('km-titel-custom', false);
   if (el('km-start').options.length) { el('km-start').selectedIndex = 0; el('km-ziel').selectedIndex = 0; }
   show('km-start-custom', false);
   show('km-ziel-custom', false);
@@ -1155,6 +1344,7 @@ el('btn-save-schicht').onclick = async () => {
     funktion: el('f-funktion').value.trim() || null,
     projektleiter: el('f-projektleiter').value.trim() || null,
     kilometer: el('f-km').value ? parseFloat(el('f-km').value) : null,
+    fahrten: currentFahrten.length ? currentFahrten : null,
     notizen: el('f-notizen').value.trim() || null
   };
 
@@ -1194,6 +1384,8 @@ async function loadSpesenStammdaten() {
   if (posErr) { console.error(posErr); } else {
     spesenPositionen = pos;
     el('sp-position').innerHTML = spesenPositionen.map(p => `<option value="${p.id}">${p.name}${p.konto ? ' (' + p.konto + ')' : ''}</option>`).join('');
+    const inlineOptions = spesenPositionen.filter(p => p.name !== 'Auftrag - Fahr- und Parkspesen');
+    el('sp-inline-position').innerHTML = inlineOptions.map(p => `<option value="${p.id}">${p.name}${p.konto ? ' (' + p.konto + ')' : ''}</option>`).join('');
   }
 
   const { data: einst } = await sb.from('einstellung').select('wert').eq('schluessel', 'km_ansatz').maybeSingle();
@@ -1349,6 +1541,7 @@ function renderSpesenListe(rows) {
         ${r.notizen ? `<div class="shift-sub">📝 ${r.notizen}</div>` : ''}
       </div>
       <div class="shift-actions">
+        ${!r.schicht_id ? `<button class="secondary" id="link-btn-${r.id}" onclick="showLinkPicker('${r.id}', this)" type="button">Zu Schicht hinzufügen</button>` : ''}
         <button class="secondary" onclick="editSpesen('${r.id}')" type="button">Bearbeiten</button>
         <button class="danger" onclick="deleteSpesen('${r.id}')" type="button">Löschen</button>
       </div>
@@ -1357,6 +1550,26 @@ function renderSpesenListe(rows) {
 
   container.innerHTML = `<div class="day-group">${html}</div>`;
 }
+
+window.showLinkPicker = (spesenId, btnEl) => {
+  if (!allSchichtRows.length) { alert('Keine Schichten vorhanden.'); return; }
+  const options = allSchichtRows.map(s => {
+    const start = new Date(s.start_zeit);
+    const label = start.toLocaleDateString('de-CH') + ' ' + fmtTime(start) + (s.projekt_name ? ' · ' + s.projekt_name : '');
+    return `<option value="${s.id}">${label}</option>`;
+  }).join('');
+  btnEl.outerHTML = `<span style="display:flex;gap:6px;align-items:center;">
+    <select id="link-select-${spesenId}" style="width:auto;padding:6px 8px;font-size:.8rem;">${options}</select>
+    <button class="secondary" style="padding:6px 10px;font-size:.78rem;" onclick="confirmLinkSpesen('${spesenId}')" type="button">OK</button>
+  </span>`;
+};
+
+window.confirmLinkSpesen = async (spesenId) => {
+  const select = el('link-select-' + spesenId);
+  const { error } = await sb.from('spesen_eintrag').update({ schicht_id: select.value }).eq('id', spesenId);
+  if (error) { alert(error.message); return; }
+  await loadSpesenListe();
+};
 
 window.editSpesen = async (id) => {
   const { data, error } = await sb.from('spesen_eintrag').select('*').eq('id', id).single();
@@ -1425,7 +1638,7 @@ el('btn-export-excel').onclick = async () => {
     alert('Fehler beim Excel-Export: ' + e.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = '📊 Excel-Export erstellen';
+    btn.textContent = 'Spesenabrechnung erstellen (Excel-Datei)';
   }
 };
 
