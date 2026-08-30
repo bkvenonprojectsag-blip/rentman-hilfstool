@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VENON Zeiterfassung – V1.2</title>
+<title>VENON Zeiterfassung – V1.3</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iRWJlbmVfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAyMDcuMyAyMDcuMyI+CiAgPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDMwLjcuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDIuMS40IEJ1aWxkIDExNCkgIC0tPgogIDxnIGlkPSJIaW50ZXJncnVuZCI+CiAgICA8Zz4KICAgICAgPHJlY3QgeD0iMi41IiB5PSIyLjUiIHdpZHRoPSIyMDIuMyIgaGVpZ2h0PSIyMDIuMyIgcng9IjM0LjgiIHJ5PSIzNC44IiBmaWxsPSIjMzUxMjM4Ii8+CiAgICAgIDxwYXRoIGQ9Ik0xNzAsNWMxNy44MSwwLDMyLjMsMTQuNDksMzIuMywzMi4zdjEzMi43YzAsMTcuODEtMTQuNDksMzIuMy0zMi4zLDMyLjNIMzcuM2MtMTcuODEsMC0zMi4zLTE0LjQ5LTMyLjMtMzIuM1YzNy4zQzUsMTkuNDksMTkuNDksNSwzNy4zLDVoMTMyLjdaTTE3MCwwSDM3LjNDMTYuNywwLDAsMTYuNywwLDM3LjN2MTMyLjdDMCwxOTAuNiwxNi43LDIwNy4zLDM3LjMsMjA3LjNoMTMyLjdjMjAuNiwwLDM3LjMtMTYuNywzNy4zLTM3LjNWMzcuM2MwLTIwLjYtMTYuNy0zNy4zLTM3LjMtMzcuM2gwWiIgZmlsbD0iIzlhZjUwMCIvPgogICAgPC9nPgogIDwvZz4KICA8cG9seWdvbiBwb2ludHM9Ijg1LjQ4IDQyLjE0IDk2LjQ1IDI5LjQ3IDYzLjU0IDI5LjQ3IDk5LjgzIDkyLjMyIDE0My43NiAxNi4yMyA5OS44MyA2Ni45OCA4NS40OCA0Mi4xNCIgZmlsbD0iIzlhZjUwMCIgZmlsbC1ydWxlPSJldmVub2RkIi8+CiAgPHRleHQgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDYuNDUgMTgzLjQ3KSIgZmlsbD0iIzlhZjUwMCIgZm9udC1mYW1pbHk9IlF1YW50aWNvLUJvbGQsIFF1YW50aWNvIiBmb250LXdlaWdodD0iNzAwIiBmb250LXNpemU9IjEwMCI+PHRzcGFuIHg9IjAiIHk9IjAiPlpFPC90c3Bhbj48L3RleHQ+Cjwvc3ZnPg==">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-populate@1.21.0/browser/xlsx-populate.min.js"></script>
@@ -81,7 +81,8 @@
   .secret{font-family:monospace;font-size:.75rem;word-break:break-all;color:var(--text-dim);background:var(--bg-input);padding:8px;border-radius:6px;margin-top:8px;}
   .hidden{display:none !important;}
   .status{font-size:.7rem;color:var(--text-dim);margin-top:24px;padding-top:12px;word-break:break-all;min-height:0;}
-  .footer-logo{display:flex;justify-content:center;margin-top:28px;padding-top:16px;border-top:1px solid var(--border);}
+  .footer-logo{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:28px;padding-top:16px;border-top:1px solid var(--border);}
+  .footer-logo .built-by{font-size:.62rem;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase;}
   .footer-logo svg{height:18px;width:auto;opacity:.6;}
   .forgot-link{background:none;border:none;color:var(--text-dim);font-size:.8rem;text-decoration:underline;cursor:pointer;padding:0;margin-top:10px;font-family:inherit;}
   .forgot-link:hover{color:var(--accent);}
@@ -117,7 +118,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
     <div>
       <h1>VENON Zeiterfassung</h1>
-      <div class="version">V1.2</div>
+      <div class="version">V1.3</div>
     </div>
   </div>
 
@@ -175,6 +176,7 @@
 
   <div class="status hidden" id="debug-status"></div>
   <div class="footer-logo">
+    <div class="built-by">Built by</div>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 682.72 149.5">
       <g id="Text">
         <path d="M55.77,93.74l-7.11-16.86-3.38,16.86h-6.68l6.98-34.81h6.71l-3.12,15.55,13.37-15.55h8.34l-15.5,16.86,8.63,17.95h-8.24Z" fill="#fff"/>
@@ -204,7 +206,7 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" style="height:30px;width:30px;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
       <div>
         <h1>VENON Zeiterfassung</h1>
-        <div class="version">V1.2 · <span id="user-email"></span></div>
+        <div class="version">V1.3 · <span id="user-email"></span></div>
       </div>
     </div>
     <button id="btn-logout" class="secondary" type="button" style="background:rgba(0,0,0,.35);">Ausloggen</button>
@@ -270,11 +272,12 @@
         </div>
         <div>
           <label for="f-projektleiter">Projektleiter</label>
-          <input type="text" id="f-projektleiter">
+          <select id="f-projektleiter-select"></select>
+          <input type="text" id="f-projektleiter" placeholder="Name eingeben" class="hidden" style="margin-top:8px;">
         </div>
       </div>
 
-      <label for="f-km">Kilometer</label>
+      <label for="f-km">Kilometer (abzüglich Arbeitsweg)</label>
       <input type="number" id="f-km" min="0" step="0.1">
 
       <div class="form-card" style="margin-top:14px;margin-bottom:0;">
@@ -297,6 +300,8 @@
 
       <label for="f-notizen">Notizen</label>
       <textarea id="f-notizen"></textarea>
+
+      <button id="btn-goto-spesen" class="secondary block" type="button">💰 Spesenposition aus dieser Schicht erfassen →</button>
 
       <div class="form-actions">
         <button id="btn-save-schicht" type="button">Speichern</button>
@@ -348,16 +353,8 @@
         </div>
       </div>
 
-      <div class="row2">
-        <div>
-          <label for="sp-kst">Kostenstelle</label>
-          <select id="sp-kst"></select>
-        </div>
-        <div>
-          <label for="sp-mwst">MWST (%)</label>
-          <input type="number" id="sp-mwst" min="0" step="0.1">
-        </div>
-      </div>
+      <label for="sp-mwst">MWST (%)</label>
+      <input type="number" id="sp-mwst" min="0" step="0.1">
 
       <label for="sp-notizen">Notizen</label>
       <textarea id="sp-notizen"></textarea>
@@ -383,8 +380,12 @@
     <input type="text" id="e-name">
     <label for="e-adresse">Wohnadresse</label>
     <input type="text" id="e-adresse" placeholder="Strasse Nr., PLZ Ort">
-    <label for="e-arbeitsweg">Normaler Arbeitsweg (km, einfache Strecke)</label>
+    <label for="e-arbeitsort">Standard-Arbeitsort</label>
+    <select id="e-arbeitsort"></select>
+    <label for="e-arbeitsweg">Normaler Arbeitsweg (km, einfache Strecke, kürzester Weg)</label>
     <input type="number" id="e-arbeitsweg" min="0" step="0.1">
+    <button id="btn-calc-arbeitsweg" class="secondary block" type="button">Distanz automatisch berechnen</button>
+    <div id="arbeitsweg-calc-msg" class="msg"></div>
     <button id="btn-save-profil" class="block" type="button">Speichern</button>
     <div id="profil-msg" class="msg"></div>
     <p style="margin-top:20px;">Wohnadresse und Arbeitsweg werden in einer späteren Version genutzt, um bei ausserordentlichen Einsatzorten die abrechenbaren Kilometer automatisch zu berechnen.</p>
@@ -400,6 +401,29 @@
     <button id="btn-change-email" class="secondary block" type="button">E-Mail ändern</button>
     <div id="email-change-msg" class="msg"></div>
     <p style="margin-top:12px;">Bei einer neuen E-Mail-Adresse schickt Supabase zur Bestätigung einen Link an die neue Adresse – das lässt sich aus Sicherheitsgründen nicht umgehen.</p>
+  </div>
+
+  <div class="footer-logo">
+    <div class="built-by">Built by</div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 682.72 149.5">
+      <g id="Text">
+        <path d="M55.77,93.74l-7.11-16.86-3.38,16.86h-6.68l6.98-34.81h6.71l-3.12,15.55,13.37-15.55h8.34l-15.5,16.86,8.63,17.95h-8.24Z" fill="#fff"/>
+        <path d="M112.31,93.74l-5.16-20.77-1.04-4.47-2.9,14.43-2.13,10.81h-5.94l6.98-34.81h7.7l5.3,20.91.86,4.07,3.06-15.36,1.97-9.62h5.99l-6.98,34.81h-7.71Z" fill="#fff"/>
+        <path d="M170.45,65.32l-7.86,16.19h9.11l-1.25-16.19ZM172.68,93.74l-.56-6.87h-12.14l-3.33,6.87h-6.82l17.28-34.81h9.16l3.33,34.81h-6.93,0Z" fill="#fff"/>
+        <path d="M237.11,81.46c-.44,2.22-1.09,4.14-1.94,5.77s-1.91,2.96-3.17,4.02c-1.26,1.05-2.73,1.84-4.39,2.34-1.67.5-3.53.76-5.57.76-1.88,0-3.51-.21-4.89-.64s-2.5-1.04-3.38-1.84-1.51-1.76-1.89-2.88c-.38-1.12-.57-2.37-.57-3.76,0-1.17.15-2.43.45-3.78l4.5-22.53h6.55l-4.53,22.69c-.21,1.1-.32,2.07-.32,2.9,0,.73.09,1.37.27,1.92s.45,1.01.82,1.38c.37.38.88.66,1.52.84.64.19,1.4.28,2.29.28,1.07,0,2.02-.14,2.86-.41.84-.27,1.58-.72,2.21-1.33s1.16-1.39,1.59-2.34c.42-.95.77-2.11,1.04-3.47l4.53-22.45h6.58l-4.55,22.53h0Z" fill="#fff"/>
+        <path d="M277.38,94.35c-1.97,0-3.8-.12-5.49-.38-1.69-.25-3.31-.62-4.87-1.12l1.25-6.15c.75.27,1.54.52,2.37.75s1.68.43,2.53.59,1.7.29,2.55.37c.85.09,1.68.14,2.48.14,1.4,0,2.61-.13,3.61-.39s1.83-.61,2.48-1.05c.65-.45,1.12-.96,1.43-1.54.3-.57.45-1.18.45-1.82,0-.74-.2-1.39-.6-1.93s-.93-1.03-1.6-1.48c-.67-.45-1.42-.86-2.27-1.25-.84-.39-1.7-.79-2.58-1.21s-1.74-.87-2.57-1.36c-.84-.48-1.59-1.06-2.25-1.73-.67-.66-1.2-1.44-1.6-2.32s-.6-1.91-.6-3.1c0-1.42.3-2.79.89-4.12.59-1.32,1.51-2.5,2.74-3.53,1.23-1.03,2.8-1.85,4.71-2.46s4.18-.92,6.8-.92c.77,0,1.54.03,2.3.09.77.06,1.53.14,2.27.24.73.1,1.43.21,2.09.35s1.25.27,1.79.41l-1.15,5.78c-.52-.18-1.09-.34-1.74-.49s-1.32-.28-2.02-.4c-.7-.11-1.41-.2-2.12-.27-.71-.06-1.39-.09-2.03-.09-1.26,0-2.34.11-3.25.33s-1.65.52-2.24.91-1.02.84-1.29,1.36c-.28.52-.41,1.08-.41,1.66,0,.68.2,1.27.61,1.77.41.51.95.97,1.61,1.4.67.43,1.42.84,2.27,1.23.84.39,1.71.8,2.59,1.24.89.43,1.75.91,2.6,1.42.84.52,1.6,1.12,2.27,1.8.66.69,1.2,1.48,1.61,2.37.41.9.61,1.93.61,3.11,0,1.79-.38,3.42-1.14,4.87-.77,1.46-1.85,2.7-3.26,3.73-1.41,1.03-3.12,1.82-5.13,2.37s-4.25.82-6.71.82" fill="#fff"/>
+        <path d="M444.87,93.74l6.74-34.81h7.29l-5.66,29.18h18.68l-1.11,5.63h-25.94Z" fill="#fff"/>
+        <path d="M515.4,65.32l-7.86,16.19h9.11l-1.25-16.19ZM517.63,93.74l-.56-6.87h-12.14l-3.33,6.87h-6.82l17.28-34.81h9.16l3.33,34.81h-6.93.01Z" fill="#fff"/>
+        <path d="M563.02,58.93h14.43c4.13,0,7.26.68,9.39,2.04,2.12,1.36,3.19,3.36,3.19,6.02,0,2.26-.68,4.11-2.04,5.55s-3.35,2.43-5.97,2.98c2.24.38,3.99,1.25,5.25,2.61s1.89,3.02,1.89,4.98c0,3.48-1.29,6.12-3.87,7.93s-6.45,2.72-11.62,2.72h-17.42l6.77-34.81v-.02ZM567.56,72.96h7.26c2.88,0,4.93-.38,6.14-1.14s1.82-2,1.82-3.73c0-1.32-.47-2.27-1.41-2.87-.94-.59-2.51-.89-4.72-.89h-7.44l-1.66,8.62h0ZM564.57,88.33h8.1c3.44,0,5.83-.42,7.16-1.25,1.33-.83,2-2.21,2-4.14,0-1.48-.56-2.62-1.68-3.41s-2.95-1.19-5.48-1.19h-8.15l-1.95,9.98h0Z" fill="#fff"/>
+        <path d="M625.74,94.35c-1.97,0-3.8-.12-5.49-.38-1.69-.25-3.31-.62-4.87-1.12l1.25-6.15c.75.27,1.54.52,2.37.75s1.68.43,2.53.59,1.7.29,2.55.37c.85.09,1.68.14,2.48.14,1.4,0,2.61-.13,3.61-.39s1.83-.61,2.48-1.05c.65-.45,1.12-.96,1.43-1.54.3-.57.45-1.18.45-1.82,0-.74-.2-1.39-.6-1.93-.4-.54-.93-1.03-1.6-1.48-.67-.45-1.42-.86-2.27-1.25-.84-.39-1.7-.79-2.58-1.21s-1.74-.87-2.57-1.36c-.84-.48-1.59-1.06-2.25-1.73-.67-.66-1.2-1.44-1.6-2.32-.4-.88-.6-1.91-.6-3.1,0-1.42.3-2.79.89-4.12.59-1.32,1.51-2.5,2.74-3.53s2.8-1.85,4.71-2.46c1.91-.61,4.18-.92,6.8-.92.77,0,1.54.03,2.3.09.77.06,1.53.14,2.27.24.73.1,1.43.21,2.09.35s1.25.27,1.79.41l-1.15,5.78c-.52-.18-1.09-.34-1.74-.49-.65-.15-1.32-.28-2.02-.4-.7-.11-1.41-.2-2.12-.27-.71-.06-1.39-.09-2.03-.09-1.26,0-2.34.11-3.25.33s-1.65.52-2.24.91-1.02.84-1.29,1.36c-.28.52-.41,1.08-.41,1.66,0,.68.2,1.27.61,1.77.41.51.95.97,1.61,1.4.67.43,1.42.84,2.27,1.23.84.39,1.71.8,2.59,1.24.89.43,1.75.91,2.6,1.42.84.52,1.6,1.12,2.27,1.8.66.69,1.2,1.48,1.61,2.37.41.9.61,1.93.61,3.11,0,1.79-.38,3.42-1.14,4.87-.77,1.46-1.85,2.7-3.26,3.73-1.41,1.03-3.12,1.82-5.13,2.37s-4.25.82-6.71.82" fill="#fff"/>
+      </g>
+      <g id="Icon">
+        <polygon points="369.27 75.5 346.51 131.82 351.37 131.82 374.13 75.49 369.27 75.5" fill="#fff"/>
+        <path d="M343.37,106.47l1.83-9.11,55.5-21.86-46.74-21.8,1.84-9.17,54.28,24.9-2.45,12.21-64.26,24.84h0Z" fill="#e5e5e5"/>
+        <path d="M333.3,81.63l2.45-12.21,64.27-24.9-1.84,9.17-55.49,21.8,46.73,21.86-1.83,9.11-54.29-24.84h0Z" fill="#b2b2b2"/>
+        <polygon points="369.18 75.71 392.03 19.17 396.88 19.17 374.04 75.71 369.18 75.71" fill="#fff"/>
+      </g>
+    </svg>
   </div>
 </div>
 
@@ -657,6 +681,7 @@ async function loadStandorte() {
   standorte = data;
   const sel = el('f-standort');
   sel.innerHTML = standorte.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  el('e-arbeitsort').innerHTML = standorte.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
   populateKmSelects();
 }
 
@@ -698,6 +723,7 @@ async function loadProfil() {
     el('e-name').value = data.name || '';
     el('e-adresse').value = data.wohnadresse || '';
     el('e-arbeitsweg').value = data.normaler_arbeitsweg_km ?? '';
+    el('e-arbeitsort').value = data.standard_arbeitsort_id || '';
   }
 }
 
@@ -707,12 +733,37 @@ el('btn-save-profil').onclick = async () => {
     id: currentUser.id,
     name: el('e-name').value.trim(),
     wohnadresse: el('e-adresse').value.trim() || null,
-    normaler_arbeitsweg_km: el('e-arbeitsweg').value ? parseFloat(el('e-arbeitsweg').value) : null
+    normaler_arbeitsweg_km: el('e-arbeitsweg').value ? parseFloat(el('e-arbeitsweg').value) : null,
+    standard_arbeitsort_id: el('e-arbeitsort').value || null
   };
   const { error } = await sb.from('profile').upsert(payload);
   if (error) { setMsg('profil-msg', error.message, 'error'); return; }
   currentProfile = payload;
   setMsg('profil-msg', 'Gespeichert.', 'ok');
+};
+
+el('btn-calc-arbeitsweg').onclick = async () => {
+  clearMsg('arbeitsweg-calc-msg');
+  const wohnadresse = el('e-adresse').value.trim();
+  const standortId = el('e-arbeitsort').value;
+  const standort = standorte.find(s => s.id === standortId);
+  if (!wohnadresse) { setMsg('arbeitsweg-calc-msg', 'Bitte zuerst Wohnadresse eintragen.', 'error'); return; }
+  if (!standort || !standort.adresse) { setMsg('arbeitsweg-calc-msg', 'Für diesen Standort ist keine Adresse hinterlegt.', 'error'); return; }
+
+  const btn = el('btn-calc-arbeitsweg');
+  btn.disabled = true;
+  btn.textContent = 'Berechne…';
+  try {
+    const [coordA, coordB] = await Promise.all([geocodeAddress(wohnadresse), geocodeAddress(standort.adresse)]);
+    const km = await routeDistanceKm(coordA, coordB, 'shortest');
+    el('e-arbeitsweg').value = km.toFixed(1);
+    setMsg('arbeitsweg-calc-msg', `Kürzester Weg ${wohnadresse} → ${standort.name}: ${km.toFixed(1)} km`, 'ok');
+  } catch (e) {
+    setMsg('arbeitsweg-calc-msg', e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Distanz automatisch berechnen';
+  }
 };
 
 el('btn-change-password').onclick = async () => {
@@ -741,7 +792,7 @@ const geocodeCache = {};
 
 async function geocodeAddress(address) {
   if (geocodeCache[address]) return geocodeCache[address];
-  const url = `https://api.heigit.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}&size=1&boundary.country=CH`;
+  const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}&size=1&boundary.country=CH`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Geocoding fehlgeschlagen (' + res.status + ')');
   const data = await res.json();
@@ -751,11 +802,11 @@ async function geocodeAddress(address) {
   return coords;
 }
 
-async function routeDistanceKm(coordA, coordB) {
-  const res = await fetch('https://api.heigit.org/v2/directions/driving-car', {
+async function routeDistanceKm(coordA, coordB, preference) {
+  const res = await fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
     method: 'POST',
     headers: { 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ coordinates: [coordA, coordB] })
+    body: JSON.stringify({ coordinates: [coordA, coordB], preference: preference || 'recommended' })
   });
   if (!res.ok) throw new Error('Routenberechnung fehlgeschlagen (' + res.status + ')');
   const data = await res.json();
@@ -889,8 +940,8 @@ el('btn-export-txt').onclick = () => {
     const nacht = calcNachtMinuten(start, end, standortName);
 
     lines.push(fmtDateLongDE(start));
-    lines.push(`  ${fmtTime(start)}–${fmtTime(end)} · ${standortName} · Pause ${r.pause_minuten || 0}min · Netto ${fmtDur(nettoMin)}`);
-    if (r.projekt_name || r.projekt_nummer) lines.push(`  Projekt: ${r.projekt_name || ''} ${r.projekt_nummer ? '(' + r.projekt_nummer + ')' : ''}`.trim());
+    lines.push(`  ${fmtTime(start)}–${fmtTime(end)} · ${standortName} · Pause ${r.pause_minuten || 0}min · Netto ${fmtDur(nettoMin)}${r.kilometer ? ' · ' + r.kilometer + ' km' : ''}`);
+    if (r.projekt_name || r.projekt_nummer) lines.push(`  Projekt: ${r.projekt_nummer ? r.projekt_nummer + ' - ' : ''}${r.projekt_name || ''}`.trim());
     if (nacht.minuten > 0) lines.push(`  davon ${fmtDur(nacht.minuten)} Nachtzuschlag (+${nacht.prozent}%)`);
     if (r.notizen) lines.push(`  Notiz: ${r.notizen}`);
     lines.push('');
@@ -969,7 +1020,8 @@ function renderSchichten(rows) {
           <input type="checkbox" class="schicht-check" data-id="${r.id}" ${selectedSchichtIds.has(r.id) ? 'checked' : ''} style="margin-top:4px;width:auto;">
           <div class="shift-main">
             <div class="shift-title">${STATUS_ICON[r.status]} ${fmtTime(start)} – ${fmtTime(end)} · ${fmtDur(nettoMin)} · ${standortName}</div>
-            <div class="shift-sub">${r.projekt_name || ''} ${r.projekt_nummer ? '(' + r.projekt_nummer + ')' : ''} ${r.funktion ? '· ' + r.funktion : ''}</div>
+            <div class="shift-sub">${r.projekt_nummer ? r.projekt_nummer + ' - ' : ''}${r.projekt_name || ''} ${r.funktion ? '· ' + r.funktion : ''}</div>
+            <div class="shift-sub">Pause ${r.pause_minuten || 0}min${r.kilometer ? ' · ' + r.kilometer + ' km' : ''}</div>
             ${nachtHtml}
             ${r.notizen ? `<div class="shift-sub">📝 ${r.notizen}</div>` : ''}
           </div>
@@ -987,6 +1039,38 @@ function renderSchichten(rows) {
 }
 
 /* --- Formular: Neu / Bearbeiten --- */
+const PROJEKTLEITER_LISTE = ['David Haag', 'David Kess', 'Roland Schneggenburger', 'Walter Liserra', 'Stefan Künzli', 'Thomas von Necker', 'Joshua Bär', 'Jahn-Erik Schäfer', 'Simeon Stofer', 'Elena Geyer', 'Anina Ljaskowsky'];
+el('f-projektleiter-select').innerHTML = '<option value="">–</option>' + PROJEKTLEITER_LISTE.map(n => `<option value="${n}">${n}</option>`).join('') + '<option value="__custom__">Eigener Name…</option>';
+
+function setProjektleiterField(name) {
+  const select = el('f-projektleiter-select');
+  if (name && PROJEKTLEITER_LISTE.includes(name)) {
+    select.value = name;
+    show('f-projektleiter', false);
+    el('f-projektleiter').value = name;
+  } else if (name) {
+    select.value = '__custom__';
+    show('f-projektleiter', true);
+    el('f-projektleiter').value = name;
+  } else {
+    select.value = '';
+    show('f-projektleiter', false);
+    el('f-projektleiter').value = '';
+  }
+}
+
+el('f-projektleiter-select').addEventListener('change', () => {
+  const val = el('f-projektleiter-select').value;
+  if (val === '__custom__') {
+    show('f-projektleiter', true);
+    el('f-projektleiter').value = '';
+    el('f-projektleiter').focus();
+  } else {
+    show('f-projektleiter', false);
+    el('f-projektleiter').value = val;
+  }
+});
+
 let editingId = null;
 let allSchichten = [];
 
@@ -999,11 +1083,11 @@ function openForm(row) {
   el('f-start').value = row ? toLocalInputValue(row.start_zeit) : '';
   el('f-end').value = row ? toLocalInputValue(row.end_zeit) : '';
   el('f-pause').value = row ? row.pause_minuten : 0;
-  el('f-standort').value = row ? row.standort_id : (standorte[0] ? standorte[0].id : '');
+  el('f-standort').value = row ? row.standort_id : ((currentProfile && currentProfile.standard_arbeitsort_id) || (standorte[0] ? standorte[0].id : ''));
   el('f-projekt-nr').value = row ? (row.projekt_nummer || '') : '';
   el('f-projekt-name').value = row ? (row.projekt_name || '') : '';
   el('f-funktion').value = row ? (row.funktion || '') : '';
-  el('f-projektleiter').value = row ? (row.projektleiter || '') : '';
+  setProjektleiterField(row ? (row.projektleiter || '') : '');
   el('f-km').value = row ? (row.kilometer ?? '') : '';
   el('f-notizen').value = row ? (row.notizen || '') : '';
   clearMsg('schicht-form-msg');
@@ -1082,12 +1166,6 @@ async function loadSpesenStammdaten() {
     el('sp-position').innerHTML = spesenPositionen.map(p => `<option value="${p.id}">${p.name}${p.konto ? ' (' + p.konto + ')' : ''}</option>`).join('');
   }
 
-  const { data: kst, error: kstErr } = await sb.from('kostenstelle').select('id, name, nummer').order('nummer');
-  if (kstErr) { console.error(kstErr); } else {
-    kostenstellen = kst;
-    el('sp-kst').innerHTML = '<option value="">–</option>' + kostenstellen.map(k => `<option value="${k.id}">${k.name} (${k.nummer})</option>`).join('');
-  }
-
   const { data: einst } = await sb.from('einstellung').select('wert').eq('schluessel', 'km_ansatz').maybeSingle();
   if (einst) kmAnsatz = parseFloat(einst.wert);
 }
@@ -1116,7 +1194,6 @@ function openSpesenForm(row) {
   el('sp-freitext').value = row ? (row.freitext || '') : '';
   el('sp-anzahl').value = row ? row.anzahl : 1;
   el('sp-stueckpreis').value = row ? row.stueckpreis : '';
-  el('sp-kst').value = row ? (row.kostenstelle_id || '') : '';
   el('sp-mwst').value = row ? (row.mwst ?? '') : '';
   el('sp-notizen').value = row ? (row.notizen || '') : '';
   const pos = spesenPositionen.find(p => p.id === el('sp-position').value);
@@ -1127,6 +1204,42 @@ function openSpesenForm(row) {
 
 el('btn-cancel-spesen').onclick = () => { show('spesen-form-card', false); editingSpesenId = null; };
 
+function openSpesenFormPrefill(prefill) {
+  editingSpesenId = null;
+  el('spesen-form-title').textContent = 'Neue Spesenposition';
+  el('sp-datum').value = prefill.datum || new Date().toISOString().slice(0, 10);
+  el('sp-auftrag').value = prefill.auftrag || '';
+  el('sp-position').value = prefill.spesen_position_id || (spesenPositionen[0] ? spesenPositionen[0].id : '');
+  el('sp-freitext').value = '';
+  el('sp-anzahl').value = prefill.anzahl || 1;
+  el('sp-stueckpreis').value = prefill.stueckpreis || '';
+  el('sp-mwst').value = '';
+  el('sp-notizen').value = '';
+  const pos = spesenPositionen.find(p => p.id === el('sp-position').value);
+  show('sp-freitext-wrap', pos && pos.name === 'Divers');
+  clearMsg('spesen-form-msg');
+  show('spesen-form-card', true);
+}
+
+el('btn-goto-spesen').onclick = () => {
+  const startVal = el('f-start').value;
+  const datum = startVal ? startVal.slice(0, 10) : new Date().toISOString().slice(0, 10);
+  const projektTeil = [el('f-projekt-nr').value.trim(), el('f-projekt-name').value.trim()].filter(Boolean).join(' - ');
+  const kmVal = parseFloat(el('f-km').value || '0');
+
+  const prefill = { datum, auftrag: projektTeil };
+  if (kmVal > 0) {
+    const kmPos = spesenPositionen.find(p => p.name === 'Auftrag - Fahr- und Parkspesen');
+    if (kmPos) prefill.spesen_position_id = kmPos.id;
+    prefill.anzahl = kmVal;
+    prefill.stueckpreis = kmAnsatz;
+  }
+
+  show('schicht-form-card', false);
+  el('nav-spesen').click();
+  openSpesenFormPrefill(prefill);
+};
+
 el('btn-save-spesen').onclick = async () => {
   clearMsg('spesen-form-msg');
   const datum = el('sp-datum').value;
@@ -1134,6 +1247,7 @@ el('btn-save-spesen').onclick = async () => {
   const anzahl = parseFloat(el('sp-anzahl').value || '0');
   const stueckpreis = parseFloat(el('sp-stueckpreis').value || '0');
   if (!datum) { setMsg('spesen-form-msg', 'Datum ist ein Pflichtfeld.', 'error'); return; }
+  if (!positionId) { setMsg('spesen-form-msg', 'Bitte eine Position wählen. Falls die Liste leer ist, Seite neu laden.', 'error'); return; }
   const pos = spesenPositionen.find(p => p.id === positionId);
   if (pos && pos.name === 'Divers' && !el('sp-freitext').value.trim()) {
     setMsg('spesen-form-msg', 'Bei "Divers" ist eine Beschreibung nötig.', 'error');
@@ -1148,7 +1262,6 @@ el('btn-save-spesen').onclick = async () => {
     freitext: el('sp-freitext').value.trim() || null,
     anzahl,
     stueckpreis,
-    kostenstelle_id: el('sp-kst').value || null,
     mwst: el('sp-mwst').value ? parseFloat(el('sp-mwst').value) : null,
     notizen: el('sp-notizen').value.trim() || null
   };
@@ -1169,7 +1282,7 @@ el('btn-save-spesen').onclick = async () => {
 async function loadSpesenListe() {
   const { data, error } = await sb
     .from('spesen_eintrag')
-    .select('*, spesen_position:spesen_position_id(name, konto), kostenstelle:kostenstelle_id(name)')
+    .select('*, spesen_position:spesen_position_id(name, konto)')
     .order('datum', { ascending: false });
   if (error) { el('spesen-liste').innerHTML = `<div class="empty-hint">Fehler beim Laden: ${error.message}</div>`; return; }
   renderSpesenListe(data);
@@ -1195,14 +1308,13 @@ function renderSpesenListe(rows) {
     const total = (r.anzahl * r.stueckpreis).toFixed(2);
     const posName = r.spesen_position ? r.spesen_position.name : '–';
     const posKonto = r.spesen_position && r.spesen_position.konto ? ' (' + r.spesen_position.konto + ')' : '';
-    const kstName = r.kostenstelle ? r.kostenstelle.name : null;
     const dateStr = new Date(r.datum + 'T00:00:00').toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
     html += `<div class="shift-row" style="border-top:1px solid var(--border);border-radius:0;">
       <input type="checkbox" class="spesen-check" data-id="${r.id}" ${selectedSpesenIds.has(r.id) ? 'checked' : ''} style="margin-top:4px;width:auto;">
       <div class="shift-main">
         <div class="shift-title">${dateStr} · ${posName}${posKonto} · CHF ${total}</div>
-        <div class="shift-sub">${r.auftrag ? 'Auftrag: ' + r.auftrag + ' · ' : ''}${r.anzahl} × CHF ${Number(r.stueckpreis).toFixed(2)}${kstName ? ' · KST ' + kstName : ''}${r.mwst ? ' · MWST ' + r.mwst + '%' : ''}</div>
+        <div class="shift-sub">${r.auftrag ? 'Auftrag: ' + r.auftrag + ' · ' : ''}${r.anzahl} × CHF ${Number(r.stueckpreis).toFixed(2)}${r.mwst ? ' · MWST ' + r.mwst + '%' : ''}</div>
         ${r.freitext ? `<div class="shift-sub">${r.freitext}</div>` : ''}
         ${r.notizen ? `<div class="shift-sub">📝 ${r.notizen}</div>` : ''}
       </div>
@@ -1263,14 +1375,12 @@ el('btn-export-excel').onclick = async () => {
     rows.forEach((r, i) => {
       const zeile = 12 + i;
       const posName = r.spesen_position ? r.spesen_position.name : '';
-      const kstNummer = r.kostenstelle ? r.kostenstelle.nummer : '';
       const dateStr = new Date(r.datum + 'T00:00:00').toLocaleDateString('de-CH');
       sheet.cell('A' + zeile).value(dateStr);
       sheet.cell('B' + zeile).value(r.anzahl);
       sheet.cell('C' + zeile).value(r.auftrag || r.freitext || '');
       sheet.cell('D' + zeile).value(posName);
       sheet.cell('E' + zeile).value(r.stueckpreis);
-      if (kstNummer !== '') sheet.cell('H' + zeile).value(kstNummer);
       if (r.mwst) sheet.cell('I' + zeile).value(r.mwst);
     });
 
