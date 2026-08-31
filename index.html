@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Rentman Hilfstool – V2.1</title>
+<title>Rentman Hilfstool – V2.2</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iRWJlbmVfMSIgZGF0YS1uYW1lPSJFYmVuZSAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDcuMyAyMTYuNSI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbC1ydWxlOiBldmVub2RkOwogICAgICB9CgogICAgICAuY2xzLTEsIC5jbHMtMiB7CiAgICAgICAgZmlsbDogIzlhZjUwMDsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmb250LWZhbWlseTogUXVhbnRpY28tQm9sZCwgUXVhbnRpY287CiAgICAgICAgZm9udC1zaXplOiA5MHB4OwogICAgICAgIGZvbnQtd2VpZ2h0OiA3MDA7CiAgICAgIH0KCiAgICAgIC5jbHMtMyB7CiAgICAgICAgZmlsbDogIzM1MTIzODsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPGcgaWQ9IkhpbnRlcmdydW5kIj4KICAgIDxyZWN0IGNsYXNzPSJjbHMtMyIgd2lkdGg9IjIwNy4zIiBoZWlnaHQ9IjIwNy4zIiByeD0iMzcuMyIgcnk9IjM3LjMiLz4KICA8L2c+CiAgPHBvbHlnb24gY2xhc3M9ImNscy0xIiBwb2ludHM9Ijg1LjQ4IDQyLjE0IDk2LjQ1IDI5LjQ3IDYzLjU0IDI5LjQ3IDk5LjgzIDkyLjMyIDE0My43NiAxNi4yMyA5OS44MyA2Ni45OCA4NS40OCA0Mi4xNCIvPgogIDx0ZXh0IGNsYXNzPSJjbHMtMiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTUuNTQgMTgzLjQ3KSI+PHRzcGFuIHg9IjAiIHk9IjAiPlJIVDwvdHNwYW4+PC90ZXh0Pgo8L3N2Zz4=">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-populate@1.21.0/browser/xlsx-populate.min.js"></script>
@@ -60,6 +60,11 @@
   }
   textarea{resize:vertical;min-height:60px;}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);border-color:var(--accent);}
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator{
+    filter:invert(1);cursor:pointer;
+  }
   button{
     border:none;border-radius:6px;
     background:var(--accent);color:#0c1f14;font-weight:700;font-family:'Quantico',sans-serif;
@@ -124,7 +129,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
     <div>
       <h1>Rentman Hilfstool</h1>
-      <div class="version">V2.1</div>
+      <div class="version">V2.2</div>
     </div>
   </div>
 
@@ -214,7 +219,7 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" style="height:30px;width:30px;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));"><polygon points="423.36 408.51 507.77 311 254.46 311 533.76 794.77 871.91 209.07 533.76 599.74 423.36 408.51" fill="#9af500"/></svg>
       <div>
         <h1>Rentman Hilfstool</h1>
-        <div class="version">V2.1 · <span id="user-email"></span></div>
+        <div class="version">V2.2 · <span id="user-email"></span></div>
       </div>
     </div>
     <button id="btn-logout" class="secondary" type="button" style="background:rgba(0,0,0,.35);">Ausloggen</button>
@@ -246,15 +251,11 @@
 
     <div class="form-card hidden" id="schicht-form-card">
       <h2 id="form-title">Neue Schicht</h2>
-      <label for="f-status">Status</label>
-      <select id="f-status">
-        <option value="geplant">🕓 Zukunft</option>
-        <option value="vorbereitet">📝 Vorbereitet</option>
-        <option value="eingetragen">✅ Eingetragen (Rentman)</option>
-        <option value="fehler">⚠️ Fehler</option>
-      </select>
+      <label>Status</label>
+      <div id="f-status-group" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+      <input type="hidden" id="f-status" value="geplant">
 
-      <div class="row2">
+      <div class="row2" style="margin-top:14px;">
         <div>
           <label for="f-start">Start</label>
           <input type="datetime-local" id="f-start">
@@ -1206,6 +1207,27 @@ const STATUS_ICON_WARNUNG = '<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2l
 const STATUS_ICON = { geplant: '🕓', vorbereitet: STATUS_ICON_STIFT, eingetragen: STATUS_ICON_HAKEN, fehler: STATUS_ICON_WARNUNG };
 const STATUS_LABEL = { geplant: 'Zukunft', vorbereitet: 'Vorbereitet', eingetragen: 'Eingetragen', fehler: 'Fehler' };
 
+function renderStatusGroup(excludeGeplant, selected) {
+  const options = ['geplant', 'vorbereitet', 'eingetragen', 'fehler'].filter(s => !(excludeGeplant && s === 'geplant'));
+  el('f-status-group').innerHTML = options.map(s =>
+    `<button type="button" class="secondary status-btn" data-status="${s}" style="display:flex;align-items:center;gap:6px;padding:8px 12px;">${STATUS_ICON[s]} ${STATUS_LABEL[s]}</button>`
+  ).join('');
+  setStatusActive(selected);
+}
+function setStatusActive(status) {
+  el('f-status').value = status;
+  document.querySelectorAll('.status-btn').forEach(b => {
+    const active = b.dataset.status === status;
+    b.style.background = active ? 'var(--accent)' : 'transparent';
+    b.style.color = active ? '#0c1f14' : 'var(--accent)';
+    b.style.fontWeight = active ? '700' : '400';
+  });
+}
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest && e.target.closest('.status-btn');
+  if (btn) setStatusActive(btn.dataset.status);
+});
+
 function updateSchichtSelectedCount() {
   el('schicht-selected-count').textContent = selectedSchichtIds.size + ' ausgewählt';
 }
@@ -1244,10 +1266,10 @@ el('btn-export-txt').onclick = () => {
     const nacht = calcNachtMinuten(start, end, standortName);
 
     lines.push(fmtDateLongDE(start));
-    lines.push(`  ${fmtTime(start)}–${fmtTime(end)} · ${standortName} · Pause ${r.pause_minuten || 0}min · Netto ${fmtDur(nettoMin)}${r.kilometer ? ' · ' + r.kilometer + ' km' : ''}`);
-    if (r.projekt_name || r.projekt_nummer) lines.push(`  Projekt: ${r.projekt_nummer ? r.projekt_nummer + ' - ' : ''}${r.projekt_name || ''}`.trim());
-    if (nacht.minuten > 0) lines.push(`  davon ${fmtDur(nacht.minuten)} Nachtzuschlag (+${nacht.prozent}%)`);
-    if (r.notizen) lines.push(`  Notiz: ${r.notizen}`);
+    lines.push(`${fmtTime(start)}–${fmtTime(end)} · ${standortName} · Pause ${fmtDur(r.pause_minuten || 0)} · Netto ${fmtDur(nettoMin)}${r.kilometer ? ' · ' + r.kilometer + ' km' : ''}`);
+    if (r.projekt_name || r.projekt_nummer) lines.push(`Projekt: ${r.projekt_nummer ? r.projekt_nummer + ' - ' : ''}${r.projekt_name || ''}`.trim());
+    if (nacht.minuten > 0) lines.push(`davon ${fmtDur(nacht.minuten)} Nachtzuschlag (+${nacht.prozent}%)`);
+    if (r.notizen) lines.push(`Notiz: ${r.notizen}`);
     lines.push('');
   });
 
@@ -1343,7 +1365,7 @@ function renderSchichten(rows) {
           <div class="shift-main">
             <div class="shift-title">${STATUS_ICON[r.status]} ${fmtTime(start)} – ${fmtTime(end)} · ${fmtDur(nettoMin)} · ${standortName}</div>
             <div class="shift-sub">${r.projekt_nummer ? r.projekt_nummer + ' - ' : ''}${r.projekt_name || ''} ${r.funktion ? '· ' + r.funktion : ''}</div>
-            <div class="shift-sub">Pause ${r.pause_minuten || 0}min${r.kilometer ? ' · Total ' + r.kilometer + ' km' : ''}</div>
+            <div class="shift-sub">Pause ${fmtDur(r.pause_minuten || 0)}${r.kilometer ? ' · Total ' + r.kilometer + ' km' : ''}</div>
             ${fahrtenHtml ? `<div class="shift-sub">${fahrtenHtml}</div>` : ''}
             ${nachtHtml}
             ${r.notizen ? `<div class="shift-sub">📝 ${r.notizen}</div>` : ''}
@@ -1414,10 +1436,7 @@ el('f-pause').addEventListener('blur', () => {
 async function openForm(row) {
   editingId = row ? row.id : null;
   el('form-title').textContent = row ? 'Schicht bearbeiten' : 'Neue Schicht';
-  const zukunftOption = el('f-status').querySelector('option[value="geplant"]');
-  if (zukunftOption) zukunftOption.disabled = !!row;
-  zukunftOption && (zukunftOption.hidden = !!row);
-  el('f-status').value = row ? row.status : 'geplant';
+  renderStatusGroup(!!row, row ? row.status : 'geplant');
   el('f-start').value = row ? toLocalInputValue(row.start_zeit) : '';
   el('f-end').value = row ? toLocalInputValue(row.end_zeit) : '';
   el('f-pause').value = row ? fmtDur(row.pause_minuten || 0) : '00:00';
@@ -2020,6 +2039,7 @@ el('btn-save-ferien-einstellungen').onclick = async () => {
   document.querySelectorAll('.fr-holiday').forEach(cb => feiertage[cb.dataset.key] = cb.checked);
   const payload = {
     id: currentUser.id,
+    name: (currentProfile && currentProfile.name) || el('e-name').value.trim() || currentUser.email,
     ferien_wochentage: wochentage,
     ferien_stunden_pro_tag: getDailyHoursFr() || null,
     ferien_anspruch_tage: getFerienanspruchTageRaw() || null,
