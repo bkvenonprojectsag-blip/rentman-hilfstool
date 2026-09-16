@@ -170,6 +170,7 @@
   .night-hint{color:var(--accent);font-size:.78rem;margin-top:4px;}
   body.theme-light .night-hint{color:#dda300;}
   .shift-actions{display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0;order:2;width:100%;justify-content:flex-end;margin-top:8px;}
+  .shift-row.ueberschneidung{border-color:var(--error);background:rgba(255,84,112,.10);}
   .shift-actions button{padding:6px 10px;font-size:.78rem;}
   .empty-hint{padding:24px;text-align:center;color:var(--text-dim);font-size:.85rem;}
   .expandable{
@@ -2447,6 +2448,13 @@ function hideFormAnimated(formEl, done) {
   }, 260);
 }
 
+function schichtUeberschneidet(row, allRows) {
+  const s = new Date(row.start_zeit).getTime();
+  const e = new Date(row.end_zeit).getTime();
+  if (!(e > s)) return false;
+  return allRows.some(o => o.id !== row.id && new Date(o.start_zeit).getTime() < e && new Date(o.end_zeit).getTime() > s);
+}
+
 function renderSchichten(rows) {
   lastRenderedSchichtRows = rows;
   const container = el('schicht-liste');
@@ -2558,9 +2566,11 @@ function renderSchichten(rows) {
 
         const nochAusgegraut = r.auto_synced && (start - new Date()) > 5 * 60 * 60 * 1000;
         const istFrei = r.funktion && r.funktion.trim().toUpperCase() === 'FREI';
+        const ueberschneidet = schichtUeberschneidet(r, allSchichtRows);
         const ausgegrautStyle = (nochAusgegraut ? 'opacity:.5;' : '') + (istFrei ? 'border-left:5px solid var(--accent);' : '');
         const ausgegrautHinweis = nochAusgegraut ? `<div class="shift-sub" style="font-style:italic;">${ICON_SYNC} Automatisch aus Rentman-Kalender importiert – wird bis 5 Std. vor Beginn laufend aktualisiert</div>` : '';
-        html += `<div class="shift-row" data-schicht-id="${r.id}" style="border-radius:${rowRadius};margin-bottom:${bottomR};${ausgegrautStyle}">
+        const ueberschneidungHinweis = ueberschneidet ? `<div class="shift-sub" style="color:var(--error);font-weight:600;">⚠️ Überschneidung mit einer anderen Schicht – bitte Zeiten anpassen</div>` : '';
+        html += `<div class="shift-row${ueberschneidet ? ' ueberschneidung' : ''}" data-schicht-id="${r.id}" style="border-radius:${rowRadius};margin-bottom:${bottomR};${ausgegrautStyle}">
           <input type="checkbox" class="schicht-check" data-id="${r.id}" ${selectedSchichtIds.has(r.id) ? 'checked' : ''} style="margin-top:4px;width:19px;height:19px;flex-shrink:0;">
           <div class="shift-main">
             <div class="shift-title">${istFrei ? ICON_FERIEN : STATUS_ICON[r.status]} ${fmtTime(start)} – ${fmtTime(end)} · ${fmtDur(totalMin)} · ${standortName}</div>
@@ -2572,6 +2582,7 @@ function renderSchichten(rows) {
             ${r.bezahlte_verpflegung ? `<div class="shift-sub">🍽️ Bezahlte Verpflegung</div>` : ''}
             ${r.notizen ? `<div class="shift-sub">${STATUS_ICON_STIFT} ${r.notizen}</div>` : ''}
             ${ausgegrautHinweis}
+            ${ueberschneidungHinweis}
           </div>
           <div class="shift-actions" style="flex-wrap:wrap;">
             ${r.id === editingId
@@ -2900,11 +2911,29 @@ window.deleteSchicht = async (id) => {
 window.duplicateSchicht = async (id) => {
   const orig = allSchichtRows.find(r => r.id === id);
   if (!orig) return;
-  const kopie = { ...orig };
-  delete kopie.id;
-  kopie.user_id = currentUser.id;
-  kopie.ical_uid = null;
-  kopie.auto_synced = false;
+  // Nur echte Spalten der Tabelle "schicht" übernehmen – orig enthält zusätzlich
+  // das per Join geladene "standort"-Objekt (standort:standort_id(name)), das
+  // keine eigene Spalte ist und beim Insert den Supabase-Fehler
+  // "Could not find the 'standort' column of 'schicht'" auslöst.
+  const kopie = {
+    user_id: currentUser.id,
+    status: orig.status,
+    start_zeit: orig.start_zeit,
+    end_zeit: orig.end_zeit,
+    pause_minuten: orig.pause_minuten,
+    standort_id: orig.standort_id,
+    projekt_nummer: orig.projekt_nummer,
+    projekt_name: orig.projekt_name,
+    funktion: orig.funktion,
+    projektleiter: orig.projektleiter,
+    kilometer: orig.kilometer,
+    fahrten: orig.fahrten,
+    notizen: orig.notizen,
+    bezahlte_verpflegung: orig.bezahlte_verpflegung,
+    kein_nachtzuschlag: orig.kein_nachtzuschlag,
+    ical_uid: null,
+    auto_synced: false
+  };
   const { error } = await sb.from('schicht').insert(kopie);
   if (error) { alert(error.message); return; }
   showToast('Schicht dupliziert.');
