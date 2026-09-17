@@ -2697,13 +2697,23 @@ function updateSchichtVorschau() {
   box.innerHTML = html;
 }
 function calcAutoPauseMinuten(start, end) {
+  // Prüft die Mittags-/Abendfenster für JEDEN Kalendertag, den die Schicht berührt
+  // (nicht nur den Starttag) – sonst wird bei mehrtägigen Schichten das Fenster an
+  // Folgetagen übersehen und der Pausenvorschlag fällt zu niedrig aus.
   let pause = 0;
-  const mittagStart = new Date(start); mittagStart.setHours(12, 0, 0, 0);
-  const mittagEnd = new Date(start); mittagEnd.setHours(13, 0, 0, 0);
-  if (start < mittagEnd && end > mittagStart) pause += 60;
-  const abendStart = new Date(start); abendStart.setHours(18, 30, 0, 0);
-  const abendEnd = new Date(start); abendEnd.setHours(19, 30, 0, 0);
-  if (start < abendEnd && end > abendStart) pause += 60;
+  let cursor = new Date(start);
+  cursor.setHours(0, 0, 0, 0);
+  const lastDay = new Date(end);
+  lastDay.setHours(0, 0, 0, 0);
+  while (cursor <= lastDay) {
+    const mittagStart = new Date(cursor); mittagStart.setHours(12, 0, 0, 0);
+    const mittagEnd = new Date(cursor); mittagEnd.setHours(13, 0, 0, 0);
+    if (start < mittagEnd && end > mittagStart) pause += 60;
+    const abendStart = new Date(cursor); abendStart.setHours(18, 30, 0, 0);
+    const abendEnd = new Date(cursor); abendEnd.setHours(19, 30, 0, 0);
+    if (start < abendEnd && end > abendStart) pause += 60;
+    cursor.setDate(cursor.getDate() + 1);
+  }
   return pause;
 }
 
@@ -4224,9 +4234,12 @@ function prorationInfoFr() {
   const startVal = el('fr-eintritt').value;
   if (!startVal) return null;
   const start = parseISODate(startVal);
-  const currentYear = new Date().getFullYear();
-  if (start.getFullYear() < currentYear) return null;
-  if (start.getFullYear() > currentYear) return { factor: 0, monthsEmployed: 0 };
+  // Bezieht sich auf das im Ferien-Tab angezeigte Planungsjahr (◂/▸-Umschalter),
+  // nicht auf das tatsächliche, aktuelle Kalenderjahr – sonst stimmt der anteilige
+  // Anspruch nicht mehr, sobald man ein anderes Jahr als das laufende ansieht.
+  const zielJahr = ferienplanJahr;
+  if (start.getFullYear() < zielJahr) return null;
+  if (start.getFullYear() > zielJahr) return { factor: 0, monthsEmployed: 0 };
   const monthsEmployed = 13 - (start.getMonth() + 1);
   return { factor: monthsEmployed / 12, monthsEmployed };
 }
