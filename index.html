@@ -13,6 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-populate@1.21.0/browser/xlsx-populate.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&family=Titillium+Web:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -123,6 +124,7 @@
   }
   .nav-tabs button{font-size:1rem;}
   button.secondary{background:transparent;border:1px solid var(--accent);color:var(--accent);}
+  button.ocr-applied{background:var(--accent) !important;color:var(--btn-text) !important;border-color:var(--accent) !important;font-weight:700;}
   body.theme-light button.secondary{color:var(--text);border-color:var(--accent);}
   body.theme-light button.danger{color:var(--error);}
   button.danger{background:transparent;border:1px solid var(--error);color:var(--error);}
@@ -3384,6 +3386,9 @@ el('btn-sp-crop-anwenden').onclick = async () => {
 
     show('sp-beleg-crop-wrap', false);
     show('sp-beleg-preview-wrap', true);
+    // Zurück zum Anfang des Formulars scrollen (Datum), damit auf dem Handy nach dem
+    // Zuschneiden sofort wieder alle Felder sichtbar sind, mit denen man weiterarbeitet.
+    smoothScrollTo(el('sp-datum'), 10);
   } catch (e) {
     setMsg('sp-beleg-ocr-msg', 'Zuschnitt fehlgeschlagen: ' + e.message, 'error');
   }
@@ -3455,6 +3460,8 @@ async function erkenneBelegDaten(blob) {
           const bestehend = el('sp-notizen').value.trim();
           el('sp-notizen').value = bestehend ? bestehend + ' · ' + hinweis : hinweis;
         }
+        btn.classList.add('ocr-applied');
+        btn.textContent = '✓ Übernommen';
       };
       line.appendChild(btn);
       el(ocrMsg).appendChild(line);
@@ -3470,7 +3477,11 @@ async function erkenneBelegDaten(blob) {
       btn.className = 'secondary';
       btn.style.cssText = 'padding:3px 10px;font-size:.78rem;';
       btn.textContent = 'Übernehmen';
-      btn.onclick = () => { el('sp-datum').value = result.datum; };
+      btn.onclick = () => {
+        el('sp-datum').value = result.datum;
+        btn.classList.add('ocr-applied');
+        btn.textContent = '✓ Übernommen';
+      };
       line.appendChild(btn);
       el(ocrMsg).appendChild(line);
     }
@@ -4306,6 +4317,178 @@ document.addEventListener('change', (e) => {
   }
 });
 
+// --- Belegbilder in die Spesenabrechnung einbetten (Seite 2, ab Zeile 41 "Belege") ---
+// xlsx-populate selbst kann keine Bilder einfügen; deshalb wird die von xlsx-populate
+// bereits befüllte Datei danach per JSZip nachbearbeitet: neue Bild-Dateien in xl/media/
+// ablegen und als zusätzliche <xdr:oneCellAnchor>-Elemente in die vorhandene
+// xl/drawings/drawing1.xml (dieselbe, die schon das Firmenlogo enthält) einhängen.
+//
+// Layout-Regeln (siehe Regelwerk): erstes Bild ab Zeile 41 / Spalte B (Titel "Belege"
+// steht in A41), maximal bis zum Anfang von Zeile 78. Reicht der Platz nicht, geht es ab
+// Spalte A (mit Rand, nicht auf der Kante) bis Spalte I weiter mit Zeile 79–117, danach
+// 118–156 usw. (jeweils 39 Zeilen). Überall 5px Abstand zu den äusseren Linien, 3-5px
+// zwischen zwei Bildern. Reihenfolge: Datum + erkannte Uhrzeit (beleg_zeit) aufsteigend.
+const XLSX_MDW = 7;           // Digit-Breite (px) der Standardschrift (Arial 11) für Spaltenbreiten
+const XLSX_BELEG_MARGIN = 5;  // px Abstand zu den äusseren Linien jedes Bandes
+const XLSX_BELEG_GAP = 4;     // px Abstand zwischen zwei nebeneinander liegenden Belegen
+const EMU_PER_PX = 9525;
+
+function excelColWidthToPx(chars) {
+  if (!chars) chars = 8.43;
+  return Math.floor(((256 * chars + Math.floor(128 / XLSX_MDW)) / 256) * XLSX_MDW);
+}
+function excelPtToPx(pt) {
+  if (!pt) pt = 15;
+  return Math.round(pt * 96 / 72);
+}
+function leseSpaltenbreitenPx(sheet) {
+  return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'].map(b => excelColWidthToPx(sheet.column(b).width()));
+}
+function summeZeilenhoehenPx(sheet, von, bisExklusiv) {
+  let sum = 0;
+  for (let r = von; r < bisExklusiv; r++) sum += excelPtToPx(sheet.row(r).height());
+  return sum;
+}
+function loeseSpaltenOffset(breitenPx, startIdx, xPx) {
+  let col = startIdx, rest = xPx;
+  while (col < breitenPx.length - 1 && rest >= breitenPx[col]) {
+    rest -= breitenPx[col];
+    col++;
+  }
+  return { col, offPx: Math.max(0, rest) };
+}
+// Zeilen-Band Nr. k (0 = erstes, ab Zeile 41; 1,2,... = Folgebänder zu je 39 Zeilen ab Zeile 79)
+function belegBandDefinition(k, sheet, spaltenPx) {
+  let topRow, bottomRow, leftColIdx;
+  if (k === 0) {
+    topRow = 41; bottomRow = 78; leftColIdx = 1; // Spalte B (A41 = Titel "Belege")
+  } else {
+    topRow = 79 + (k - 1) * 39;
+    bottomRow = topRow + 39;
+    leftColIdx = 0; // Spalte A (mit Rand, siehe Margin)
+  }
+  const rightColIdx = 8; // Spalte I
+  const heightPx = summeZeilenhoehenPx(sheet, topRow, bottomRow) - 2 * XLSX_BELEG_MARGIN;
+  const widthPx = spaltenPx.slice(leftColIdx, rightColIdx + 1).reduce((a, b) => a + b, 0) - 2 * XLSX_BELEG_MARGIN;
+  return { topRow, leftColIdx, heightPx, widthPx };
+}
+// Verteilt die Belegbilder (mit ihrem Seitenverhältnis) nacheinander links nach rechts
+// über die Bänder und gibt für jedes die Zielposition/-grösse in EMU zurück.
+function packeBelegBilder(bilder, sheet, spaltenPx) {
+  const platzierungen = [];
+  let bandIndex = 0;
+  let band = belegBandDefinition(bandIndex, sheet, spaltenPx);
+  let cursorX = 0;
+
+  for (const bild of bilder) {
+    let zielHoehe = band.heightPx;
+    let zielBreite = bild.aspect * zielHoehe;
+    if (zielBreite > band.widthPx) {
+      zielBreite = band.widthPx;
+      zielHoehe = zielBreite / bild.aspect;
+    }
+    if (cursorX > 0 && cursorX + XLSX_BELEG_GAP + zielBreite > band.widthPx) {
+      bandIndex++;
+      band = belegBandDefinition(bandIndex, sheet, spaltenPx);
+      cursorX = 0;
+    }
+    if (cursorX > 0) cursorX += XLSX_BELEG_GAP;
+
+    const { col, offPx } = loeseSpaltenOffset(spaltenPx, band.leftColIdx, XLSX_BELEG_MARGIN + cursorX);
+    platzierungen.push({
+      col, colOffEmu: Math.round(offPx * EMU_PER_PX),
+      row: band.topRow - 1, rowOffEmu: Math.round(XLSX_BELEG_MARGIN * EMU_PER_PX),
+      widthEmu: Math.round(zielBreite * EMU_PER_PX),
+      heightEmu: Math.round(zielHoehe * EMU_PER_PX),
+    });
+    cursorX += zielBreite;
+  }
+  return platzierungen;
+}
+// Lädt ein Beleg-Foto aus dem Storage und ermittelt sein Seitenverhältnis. PDFs und
+// nicht ladbare Belege werden übersprungen (null).
+async function ladeBelegBildFuerExport(row) {
+  if (!row.beleg_pfad) return null;
+  const ext = (row.beleg_pfad.split('.').pop() || '').toLowerCase();
+  if (ext === 'pdf') return null;
+  const { data, error } = await sb.storage.from('belege').createSignedUrl(row.beleg_pfad, 3600);
+  if (error || !data) return null;
+  const resp = await fetch(data.signedUrl);
+  if (!resp.ok) return null;
+  const buf = await resp.arrayBuffer();
+  try {
+    const bitmap = await createImageBitmap(new Blob([buf]));
+    const aspect = bitmap.width / bitmap.height;
+    if (bitmap.close) bitmap.close();
+    return { bytes: buf, aspect, ext: ext === 'png' ? 'png' : 'jpeg' };
+  } catch (e) {
+    return null;
+  }
+}
+// Hängt die Belegbilder der übergebenen (Datum+Zeit sortierten) Spesenpositionen als
+// zusätzliche Bilder in die xlsx-populate-Ausgabedatei ein. Gibt den finalen Blob sowie
+// Zähler für übersprungene PDFs/Fehler zurück.
+async function fuegeBelegbilderEin(blob, sheet, rowsSorted) {
+  const mitBeleg = [...rowsSorted]
+    .filter(r => r.beleg_pfad)
+    .sort((a, b) => (a.datum + (a.beleg_zeit || '00:00')).localeCompare(b.datum + (b.beleg_zeit || '00:00')));
+  let uebersprungenPdf = 0, uebersprungenFehler = 0;
+  if (!mitBeleg.length) return { blob, uebersprungenPdf, uebersprungenFehler };
+
+  const geladen = [];
+  for (const row of mitBeleg) {
+    if ((row.beleg_pfad.split('.').pop() || '').toLowerCase() === 'pdf') { uebersprungenPdf++; continue; }
+    const bild = await ladeBelegBildFuerExport(row);
+    if (!bild) { uebersprungenFehler++; continue; }
+    geladen.push(bild);
+  }
+  if (!geladen.length) return { blob, uebersprungenPdf, uebersprungenFehler };
+
+  const spaltenPx = leseSpaltenbreitenPx(sheet);
+  const platzierungen = packeBelegBilder(geladen, sheet, spaltenPx);
+
+  const zip = await JSZip.loadAsync(blob);
+  const mediaFiles = Object.keys(zip.files).filter(n => /^xl\/media\/image\d+\./.test(n));
+  let nextImgNum = 1 + Math.max(0, ...mediaFiles.map(n => parseInt(n.match(/image(\d+)\./)[1], 10)));
+
+  const drawingPath = 'xl/drawings/drawing1.xml';
+  const relsPath = 'xl/drawings/_rels/drawing1.xml.rels';
+  let drawingXml = await zip.file(drawingPath).async('string');
+  let relsXml = await zip.file(relsPath).async('string');
+
+  const relIds = [...relsXml.matchAll(/Id="rId(\d+)"/g)].map(m => parseInt(m[1], 10));
+  let nextRelId = 1 + Math.max(0, ...relIds);
+  const shapeIds = [...drawingXml.matchAll(/<xdr:cNvPr id="(\d+)"/g)].map(m => parseInt(m[1], 10));
+  let nextShapeId = 1 + Math.max(0, ...shapeIds);
+
+  let neueAnchors = '', neueRels = '';
+  geladen.forEach((bild, i) => {
+    const p = platzierungen[i];
+    const imgNum = nextImgNum++;
+    const relId = 'rId' + (nextRelId++);
+    const shapeId = nextShapeId++;
+    const dateiname = `image${imgNum}.${bild.ext}`;
+    zip.file(`xl/media/${dateiname}`, bild.bytes);
+    neueRels += `<Relationship Id="${relId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/${dateiname}"/>`;
+    neueAnchors += `<xdr:oneCellAnchor><xdr:from><xdr:col>${p.col}</xdr:col><xdr:colOff>${p.colOffEmu}</xdr:colOff><xdr:row>${p.row}</xdr:row><xdr:rowOff>${p.rowOffEmu}</xdr:rowOff></xdr:from><xdr:ext cx="${p.widthEmu}" cy="${p.heightEmu}"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${shapeId}" name="Beleg${imgNum}"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="${relId}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${p.widthEmu}" cy="${p.heightEmu}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor>`;
+  });
+
+  drawingXml = drawingXml.replace('</xdr:wsDr>', neueAnchors + '</xdr:wsDr>');
+  relsXml = relsXml.replace('</Relationships>', neueRels + '</Relationships>');
+  zip.file(drawingPath, drawingXml);
+  zip.file(relsPath, relsXml);
+
+  const ctPath = '[Content_Types].xml';
+  let ctXml = await zip.file(ctPath).async('string');
+  if (!/Extension="jpeg"/.test(ctXml)) {
+    ctXml = ctXml.replace('</Types>', '<Default Extension="jpeg" ContentType="image/jpeg"/></Types>');
+    zip.file(ctPath, ctXml);
+  }
+
+  const neuerBlob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  return { blob: neuerBlob, uebersprungenPdf, uebersprungenFehler };
+}
+
 el('btn-export-excel').onclick = async () => {
   const selectedRows = allSpesenRows.filter(r => selectedSpesenIds.has(r.id));
   if (!selectedRows.length) { showErrorToast('Bitte mindestens eine Spesenposition auswählen.'); return; }
@@ -4341,8 +4524,20 @@ el('btn-export-excel').onclick = async () => {
       if (r.mwst) sheet.cell('I' + zeile).value(r.mwst);
     });
 
-    const blob = await workbook.outputAsync();
-    const url = URL.createObjectURL(blob);
+    let finalBlob = await workbook.outputAsync();
+    try {
+      const ergebnis = await fuegeBelegbilderEin(finalBlob, sheet, rowsSorted);
+      finalBlob = ergebnis.blob;
+      const hinweise = [];
+      if (ergebnis.uebersprungenPdf) hinweise.push(`${ergebnis.uebersprungenPdf} PDF-Beleg(e) (nur Fotos werden eingefügt)`);
+      if (ergebnis.uebersprungenFehler) hinweise.push(`${ergebnis.uebersprungenFehler} Beleg(e) konnten nicht geladen werden`);
+      if (hinweise.length) showToast('Hinweis: ' + hinweise.join(', ') + '.', 'error');
+    } catch (e) {
+      console.error('Belege einfügen fehlgeschlagen:', e);
+      showToast('Belege konnten nicht in die Excel-Datei eingefügt werden: ' + e.message, 'error');
+    }
+
+    const url = URL.createObjectURL(finalBlob);
     const a = document.createElement('a');
     a.href = url;
     const earliestDate = rowsSorted[0].datum;
