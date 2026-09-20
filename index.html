@@ -141,6 +141,14 @@
   .qr-wrap img{width:180px;height:180px;display:block;}
   .secret{font-family:monospace;font-size:.75rem;word-break:break-all;color:var(--text-dim);background:var(--bg-input);padding:8px;border-radius:6px;margin-top:8px;}
   .hidden{display:none !important;}
+  .sp-crop-stage{position:relative;max-width:100%;touch-action:none;user-select:none;-webkit-user-select:none;line-height:0;}
+  .sp-crop-stage canvas#sp-crop-canvas{display:block;width:100%;height:auto;border-radius:8px;}
+  .sp-crop-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+  .sp-crop-handle{position:absolute;width:38px;height:38px;transform:translate(-50%,-50%);border-radius:50%;background:rgba(154,245,0,.28);border:2px solid var(--accent);touch-action:none;box-shadow:0 0 0 4px rgba(0,0,0,.18);}
+  .sp-crop-handle.active{background:rgba(255,84,112,.32);border-color:var(--error);}
+  .sp-crop-magnifier{position:absolute;display:none;border-radius:50%;pointer-events:none;z-index:20;filter:drop-shadow(0 2px 8px rgba(0,0,0,.55));}
+  .sp-crop-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .sp-crop-toolbar button{padding:6px 12px;font-size:.78rem;}
   .status{font-size:.7rem;color:var(--text-dim);margin-top:24px;padding-top:12px;word-break:break-all;min-height:0;}
   .footer-logo{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:28px;padding-top:16px;border-top:1px solid var(--border);}
   .footer-logo .built-by{font-size:.62rem;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase;}
@@ -747,10 +755,36 @@
         <button type="button" class="secondary" id="btn-sp-beleg-ansehen" style="padding:4px 10px;font-size:.78rem;">Ansehen</button>
         <button type="button" class="secondary" id="btn-sp-beleg-entfernen" style="padding:4px 10px;font-size:.78rem;">Entfernen</button>
       </div>
+      <div id="sp-beleg-crop-wrap" class="hidden" style="margin-top:10px;">
+        <div style="font-size:.8rem;color:var(--text-dim);margin-bottom:6px;">Ecken auf den Kassenzettel ziehen, bei Bedarf drehen/spiegeln, dann zuschneiden:</div>
+        <div class="sp-crop-stage" id="sp-crop-stage">
+          <canvas id="sp-crop-canvas"></canvas>
+          <svg class="sp-crop-svg" viewBox="0 0 1 1" preserveAspectRatio="none">
+            <polygon id="sp-crop-poly" points="" fill="rgba(154,245,0,.15)" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"></polygon>
+          </svg>
+          <div class="sp-crop-handle" data-corner="tl"></div>
+          <div class="sp-crop-handle" data-corner="tr"></div>
+          <div class="sp-crop-handle" data-corner="br"></div>
+          <div class="sp-crop-handle" data-corner="bl"></div>
+          <canvas class="sp-crop-magnifier" id="sp-crop-magnifier" width="140" height="140"></canvas>
+        </div>
+        <div class="sp-crop-toolbar">
+          <button type="button" class="secondary" id="btn-sp-crop-rotate-left" title="Nach links drehen">⟲ Links</button>
+          <button type="button" class="secondary" id="btn-sp-crop-rotate-right" title="Nach rechts drehen">⟳ Rechts</button>
+          <button type="button" class="secondary" id="btn-sp-crop-flip-h" title="Horizontal spiegeln">⇋ Horizontal</button>
+          <button type="button" class="secondary" id="btn-sp-crop-flip-v" title="Vertikal spiegeln">⇵ Vertikal</button>
+        </div>
+        <div class="sp-crop-toolbar">
+          <button type="button" class="secondary" id="btn-sp-crop-reset">↺ Ecken zurücksetzen</button>
+          <button type="button" class="secondary" id="btn-sp-crop-voll">Ganzes Bild</button>
+          <button type="button" id="btn-sp-crop-anwenden">✓ Zuschnitt anwenden</button>
+        </div>
+      </div>
       <div id="sp-beleg-preview-wrap" class="hidden" style="margin-top:10px;">
-        <div style="font-size:.8rem;color:var(--text-dim);margin-bottom:6px;">Automatisch zugeschnitten &amp; kontrastverstärkt:</div>
+        <div style="font-size:.8rem;color:var(--text-dim);margin-bottom:6px;">Zugeschnitten &amp; kontrastverstärkt:</div>
         <canvas id="sp-beleg-preview-canvas" style="max-width:100%;border-radius:8px;border:1px solid var(--bg-input);"></canvas>
-        <div style="display:flex;gap:10px;margin-top:8px;">
+        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+          <button type="button" class="secondary" id="btn-sp-beleg-zuschnitt-anpassen" style="padding:6px 14px;font-size:.82rem;">✎ Zuschnitt anpassen</button>
           <button type="button" class="secondary" id="btn-sp-beleg-neu" style="padding:6px 14px;font-size:.82rem;">↺ Neu aufnehmen</button>
           <button type="button" id="btn-sp-beleg-verwenden" style="padding:6px 14px;font-size:.82rem;">✓ Verwenden</button>
         </div>
@@ -3105,46 +3139,255 @@ function fileZuImage(file) {
   });
 }
 
-// Zeichnet ein Bild (ggf. automatisch zugeschnitten) mit Kontrastverstärkung auf
-// die Vorschau-Canvas. Versucht zuerst die automatische Kantenerkennung; schlägt
-// diese fehl, wird das Originalfoto (nur kontrastverstärkt) verwendet.
-async function verarbeiteBelegFoto(file) {
-  const canvas = el('sp-beleg-preview-canvas');
-  const img = await fileZuImage(file);
+// --- Manueller Zuschnitt: vier ziehbare Ecken auf einer Arbeits-Canvas ---
+// Statt (oder zusätzlich zu) der automatischen Kantenerkennung kann der Nutzer
+// die vier Ecken des Kassenzettels von Hand auf den Rand ziehen. Dafür wird
+// das Foto auf eine Arbeits-Canvas (sp-crop-canvas, max. 1600px) gezeichnet;
+// die Eckpunkte werden als Bruchteile (0..1) davon gespeichert, damit sie
+// unabhängig von der Anzeigegrösse bleiben. "Zuschnitt anwenden" führt dann
+// per OpenCV.js eine perspektivische Entzerrung (warpPerspective) auf genau
+// dieses Viereck aus.
+let cropPts = null;          // { tl:{x,y}, tr:{x,y}, br:{x,y}, bl:{x,y} } als Bruchteile 0..1
+let activeCropHandle = null; // 'tl' | 'tr' | 'br' | 'bl' | null, während des Ziehens
 
-  let quelle = img;
-  let breite = img.naturalWidth, hoehe = img.naturalHeight;
+function defaultEcken() {
+  return { tl: { x: 0.08, y: 0.06 }, tr: { x: 0.92, y: 0.06 }, br: { x: 0.92, y: 0.94 }, bl: { x: 0.08, y: 0.94 } };
+}
 
+// Best-effort automatische Ecken-Erkennung via jscanify (auf der Arbeits-Canvas).
+// Schlägt sie fehl oder ist die Bibliothek nicht verfügbar, wird null zurückgegeben
+// und der Aufrufer verwendet einen Standard-Rahmen als Ausgangspunkt.
+async function ermittleStartEcken(canvas) {
   try {
     await ladeKantenerkennung();
     const scanner = new jscanify();
-    const zielBreite = Math.min(1200, img.naturalWidth);
-    const zielHoehe = Math.round(zielBreite * (img.naturalHeight / img.naturalWidth));
-    const extracted = scanner.extractPaper(img, zielBreite, zielHoehe);
-    if (extracted && extracted.width > 20 && extracted.height > 20) {
-      quelle = extracted;
-      breite = extracted.width;
-      hoehe = extracted.height;
-    }
+    const mat = cv.imread(canvas);
+    const contour = scanner.findPaperContour(mat);
+    if (!contour) { mat.delete(); return null; }
+    const c = scanner.getCornerPoints(contour);
+    mat.delete();
+    if (contour.delete) contour.delete();
+    if (!c || !c.topLeftCorner || !c.topRightCorner || !c.bottomRightCorner || !c.bottomLeftCorner) return null;
+    const nw = canvas.width, nh = canvas.height;
+    const clamp01 = v => Math.min(1, Math.max(0, v));
+    return {
+      tl: { x: clamp01(c.topLeftCorner.x / nw), y: clamp01(c.topLeftCorner.y / nh) },
+      tr: { x: clamp01(c.topRightCorner.x / nw), y: clamp01(c.topRightCorner.y / nh) },
+      br: { x: clamp01(c.bottomRightCorner.x / nw), y: clamp01(c.bottomRightCorner.y / nh) },
+      bl: { x: clamp01(c.bottomLeftCorner.x / nw), y: clamp01(c.bottomLeftCorner.y / nh) },
+    };
   } catch (e) {
-    // Kantenerkennung nicht verfügbar/fehlgeschlagen – Originalfoto wird verwendet
+    return null;
   }
-
-  const maxDim = 1600;
-  let outW = breite, outH = hoehe;
-  if (Math.max(outW, outH) > maxDim) {
-    const scale = maxDim / Math.max(outW, outH);
-    outW = Math.round(outW * scale);
-    outH = Math.round(outH * scale);
-  }
-  canvas.width = outW;
-  canvas.height = outH;
-  const ctx = canvas.getContext('2d');
-  ctx.filter = 'contrast(1.35) brightness(1.08) saturate(0.9)';
-  ctx.drawImage(quelle, 0, 0, outW, outH);
-  ctx.filter = 'none';
-  show('sp-beleg-preview-wrap', true);
 }
+
+// Lädt das Foto auf die Arbeits-Canvas (max. 1600px) und zeigt die Zuschnitt-Stufe
+// mit den vier ziehbaren Ecken (Startwerte: automatisch erkannt, sonst Standard-Rahmen).
+async function starteZuschnitt(file) {
+  const img = await fileZuImage(file);
+  const canvas = el('sp-crop-canvas');
+  const maxDim = 1600;
+  let w = img.naturalWidth, h = img.naturalHeight;
+  if (Math.max(w, h) > maxDim) {
+    const scale = maxDim / Math.max(w, h);
+    w = Math.round(w * scale);
+    h = Math.round(h * scale);
+  }
+  canvas.width = w;
+  canvas.height = h;
+  canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+  cropPts = (await ermittleStartEcken(canvas)) || defaultEcken();
+  renderCropOverlay();
+  show('sp-beleg-crop-wrap', true);
+}
+
+function renderCropOverlay() {
+  if (!cropPts) return;
+  const p = cropPts;
+  el('sp-crop-poly').setAttribute('points', `${p.tl.x},${p.tl.y} ${p.tr.x},${p.tr.y} ${p.br.x},${p.br.y} ${p.bl.x},${p.bl.y}`);
+  ['tl', 'tr', 'br', 'bl'].forEach(k => {
+    const h = document.querySelector(`.sp-crop-handle[data-corner="${k}"]`);
+    h.style.left = (p[k].x * 100) + '%';
+    h.style.top = (p[k].y * 100) + '%';
+  });
+}
+
+// Zeigt beim Ziehen einer Ecke eine kreisrunde Lupe mit Fadenkreuz — versetzt
+// über dem Finger, damit die genaue Ecke nicht vom Finger verdeckt wird.
+function zeigeCropLupe(fx, fy, rect) {
+  const canvas = el('sp-crop-magnifier');
+  const size = canvas.width;
+  const zoom = 3.2;
+  const quelle = el('sp-crop-canvas');
+  const sx = fx * quelle.width;
+  const sy = fy * quelle.height;
+  const srcSize = size / zoom;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, size, size);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, size, size);
+  ctx.drawImage(quelle, sx - srcSize / 2, sy - srcSize / 2, srcSize, srcSize, 0, 0, size, size);
+  ctx.restore();
+  ctx.beginPath();
+  ctx.moveTo(size / 2 - 16, size / 2); ctx.lineTo(size / 2 + 16, size / 2);
+  ctx.moveTo(size / 2, size / 2 - 16); ctx.lineTo(size / 2, size / 2 + 16);
+  ctx.strokeStyle = '#ff5470'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(size / 2, size / 2, 5, 0, Math.PI * 2);
+  ctx.strokeStyle = '#ff5470'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(size / 2, size / 2, size / 2 - 1, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2; ctx.stroke();
+
+  const gap = 46;
+  let magLeft = fx * rect.width - size / 2;
+  let magTop = fy * rect.height - size - gap;
+  if (magTop < -4) magTop = fy * rect.height + gap;
+  magLeft = Math.max(4, Math.min(rect.width - size - 4, magLeft));
+  canvas.style.left = magLeft + 'px';
+  canvas.style.top = magTop + 'px';
+  canvas.style.display = 'block';
+}
+
+function aktualisiereCropDrag(clientX, clientY) {
+  if (!activeCropHandle) return;
+  const rect = el('sp-crop-stage').getBoundingClientRect();
+  const clamp01 = v => Math.min(1, Math.max(0, v));
+  const fx = clamp01((clientX - rect.left) / rect.width);
+  const fy = clamp01((clientY - rect.top) / rect.height);
+  cropPts[activeCropHandle] = { x: fx, y: fy };
+  renderCropOverlay();
+  zeigeCropLupe(fx, fy, rect);
+}
+
+document.querySelectorAll('.sp-crop-handle').forEach(handle => {
+  const corner = handle.dataset.corner;
+  handle.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    activeCropHandle = corner;
+    handle.classList.add('active');
+    handle.setPointerCapture(e.pointerId);
+    aktualisiereCropDrag(e.clientX, e.clientY);
+  });
+  handle.addEventListener('pointermove', e => {
+    if (activeCropHandle !== corner) return;
+    aktualisiereCropDrag(e.clientX, e.clientY);
+  });
+  const beendeDrag = () => {
+    if (activeCropHandle !== corner) return;
+    activeCropHandle = null;
+    handle.classList.remove('active');
+    el('sp-crop-magnifier').style.display = 'none';
+  };
+  handle.addEventListener('pointerup', beendeDrag);
+  handle.addEventListener('pointercancel', beendeDrag);
+});
+
+function transformiereEcken(fn) {
+  ['tl', 'tr', 'br', 'bl'].forEach(k => { cropPts[k] = fn(cropPts[k]); });
+}
+
+// Dreht die Arbeits-Canvas um 90° (deg: 90 = rechts/im Uhrzeigersinn, -90 = links)
+// und rechnet die vier Eckpunkte auf die neue Ausrichtung um.
+function rotiereCrop(deg) {
+  const canvas = el('sp-crop-canvas');
+  const w = canvas.width, h = canvas.height;
+  const tmp = document.createElement('canvas');
+  tmp.width = h; tmp.height = w;
+  const tctx = tmp.getContext('2d');
+  tctx.translate(h / 2, w / 2);
+  tctx.rotate(deg * Math.PI / 180);
+  tctx.drawImage(canvas, -w / 2, -h / 2);
+  canvas.width = h; canvas.height = w;
+  canvas.getContext('2d').drawImage(tmp, 0, 0);
+
+  if (deg === 90) transformiereEcken(p => ({ x: 1 - p.y, y: p.x }));
+  else transformiereEcken(p => ({ x: p.y, y: 1 - p.x }));
+  renderCropOverlay();
+}
+
+// Spiegelt die Arbeits-Canvas (horizontal = links/rechts, sonst vertikal) und
+// rechnet die Eckpunkte entsprechend um.
+function spiegleCrop(horizontal) {
+  const canvas = el('sp-crop-canvas');
+  const w = canvas.width, h = canvas.height;
+  const tmp = document.createElement('canvas');
+  tmp.width = w; tmp.height = h;
+  const tctx = tmp.getContext('2d');
+  tctx.translate(horizontal ? w : 0, horizontal ? 0 : h);
+  tctx.scale(horizontal ? -1 : 1, horizontal ? 1 : -1);
+  tctx.drawImage(canvas, 0, 0);
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, w, h);
+  ctx.drawImage(tmp, 0, 0);
+
+  if (horizontal) transformiereEcken(p => ({ x: 1 - p.x, y: p.y }));
+  else transformiereEcken(p => ({ x: p.x, y: 1 - p.y }));
+  renderCropOverlay();
+}
+
+el('btn-sp-crop-rotate-left').onclick = () => rotiereCrop(-90);
+el('btn-sp-crop-rotate-right').onclick = () => rotiereCrop(90);
+el('btn-sp-crop-flip-h').onclick = () => spiegleCrop(true);
+el('btn-sp-crop-flip-v').onclick = () => spiegleCrop(false);
+el('btn-sp-crop-reset').onclick = async () => {
+  cropPts = (await ermittleStartEcken(el('sp-crop-canvas'))) || defaultEcken();
+  renderCropOverlay();
+};
+el('btn-sp-crop-voll').onclick = () => {
+  cropPts = { tl: { x: 0, y: 0 }, tr: { x: 1, y: 0 }, br: { x: 1, y: 1 }, bl: { x: 0, y: 1 } };
+  renderCropOverlay();
+};
+
+// Führt die perspektivische Entzerrung auf das aktuelle Viereck aus (OpenCV.js
+// warpPerspective), verstärkt danach den Kontrast wie bisher und zeigt das
+// Ergebnis in der finalen Vorschau (sp-beleg-preview-wrap) an.
+el('btn-sp-crop-anwenden').onclick = async () => {
+  try {
+    await ladeKantenerkennung();
+    const quelle = el('sp-crop-canvas');
+    const nw = quelle.width, nh = quelle.height;
+    const pts = ['tl', 'tr', 'br', 'bl'].map(k => [
+      Math.round(Math.min(Math.max(cropPts[k].x, 0), 1) * nw),
+      Math.round(Math.min(Math.max(cropPts[k].y, 0), 1) * nh),
+    ]);
+    const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+    const outW = Math.max(20, Math.round(Math.max(dist(pts[0], pts[1]), dist(pts[3], pts[2]))));
+    const outH = Math.max(20, Math.round(Math.max(dist(pts[0], pts[3]), dist(pts[1], pts[2]))));
+
+    const srcMat = cv.imread(quelle);
+    const srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, pts.flat());
+    const dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, outW, 0, outW, outH, 0, outH]);
+    const M = cv.getPerspectiveTransform(srcTri, dstTri);
+    const dst = new cv.Mat();
+    cv.warpPerspective(srcMat, dst, M, new cv.Size(outW, outH), cv.INTER_LINEAR, cv.BORDER_REPLICATE);
+    const tempCanvas = document.createElement('canvas');
+    cv.imshow(tempCanvas, dst);
+    srcMat.delete(); srcTri.delete(); dstTri.delete(); M.delete(); dst.delete();
+
+    const maxDim = 1600;
+    let fw = outW, fh = outH;
+    if (Math.max(fw, fh) > maxDim) {
+      const scale = maxDim / Math.max(fw, fh);
+      fw = Math.round(fw * scale);
+      fh = Math.round(fh * scale);
+    }
+    const canvas = el('sp-beleg-preview-canvas');
+    canvas.width = fw; canvas.height = fh;
+    const ctx = canvas.getContext('2d');
+    ctx.filter = 'contrast(1.35) brightness(1.08) saturate(0.9)';
+    ctx.drawImage(tempCanvas, 0, 0, fw, fh);
+    ctx.filter = 'none';
+
+    show('sp-beleg-crop-wrap', false);
+    show('sp-beleg-preview-wrap', true);
+  } catch (e) {
+    setMsg('sp-beleg-ocr-msg', 'Zuschnitt fehlgeschlagen: ' + e.message, 'error');
+  }
+};
 
 async function uploadBeleg(blob, typ, oldPfad) {
   const ext = typ === 'pdf' ? 'pdf' : 'jpg';
@@ -3250,8 +3493,10 @@ el('sp-beleg').addEventListener('change', async () => {
   const file = el('sp-beleg').files[0];
   clearMsg('sp-beleg-ocr-msg');
   show('sp-beleg-preview-wrap', false);
+  show('sp-beleg-crop-wrap', false);
   belegBereitBlob = null;
   belegBereitTyp = null;
+  cropPts = null;
   if (!file) return;
 
   if (file.type === 'application/pdf') {
@@ -3263,18 +3508,25 @@ el('sp-beleg').addEventListener('change', async () => {
   }
 
   try {
-    await verarbeiteBelegFoto(file);
+    await starteZuschnitt(file);
   } catch (e) {
-    setMsg('sp-beleg-ocr-msg', 'Foto konnte nicht verarbeitet werden: ' + e.message, 'error');
+    setMsg('sp-beleg-ocr-msg', 'Foto konnte nicht geladen werden: ' + e.message, 'error');
   }
 });
+
+el('btn-sp-beleg-zuschnitt-anpassen').onclick = () => {
+  show('sp-beleg-preview-wrap', false);
+  show('sp-beleg-crop-wrap', true);
+};
 
 el('btn-sp-beleg-neu').onclick = () => {
   el('sp-beleg').value = '';
   show('sp-beleg-preview-wrap', false);
+  show('sp-beleg-crop-wrap', false);
   clearMsg('sp-beleg-ocr-msg');
   belegBereitBlob = null;
   belegBereitTyp = null;
+  cropPts = null;
 };
 
 el('btn-sp-beleg-verwenden').onclick = async () => {
@@ -3456,6 +3708,8 @@ function openSpesenForm(row) {
   el('sp-beleg').value = '';
   show('sp-beleg-info', !!editingBelegPfad);
   show('sp-beleg-preview-wrap', false);
+  show('sp-beleg-crop-wrap', false);
+  cropPts = null;
   clearMsg('sp-beleg-ocr-msg');
   clearMsg('spesen-form-msg');
   showFormAnimated(formCard, isInline);
@@ -3471,6 +3725,8 @@ el('btn-cancel-spesen').onclick = () => {
   belegBereitBlob = null;
   belegBereitTyp = null;
   belegDetectedZeit = null;
+  cropPts = null;
+  show('sp-beleg-crop-wrap', false);
   show('btn-neue-spesen-speichern', false);
   show('btn-neue-spesen-abbrechen', false);
   setTimeout(() => renderSpesenListe(lastRenderedSpesenRows), 260);
