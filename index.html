@@ -2806,6 +2806,15 @@ const collapsedSchichtDays = new Set();
 // danach entscheidet nur noch der Benutzer per Klick.
 const schichtTageInitialisiert = new Set();
 
+// Ferienübersicht in der Schichtliste: aufklappbar, Zustand bleibt beim Neuzeichnen der Liste erhalten.
+let ferienUebersichtOffen = false;
+window.toggleFerienUebersicht = () => {
+  ferienUebersichtOffen = !ferienUebersichtOffen;
+  const panel = document.getElementById('ferien-uebersicht-panel');
+  const btn = document.getElementById('btn-ferien-uebersicht-toggle');
+  if (panel) panel.classList.toggle('hidden', !ferienUebersichtOffen);
+  if (btn) { btn.classList.toggle('open', ferienUebersichtOffen); btn.setAttribute('aria-expanded', String(ferienUebersichtOffen)); }
+};
 window.toggleSchichtTagCollapse = (key) => {
   if (collapsedSchichtDays.has(key)) collapsedSchichtDays.delete(key); else collapsedSchichtDays.add(key);
   renderSchichten(lastRenderedSchichtRows);
@@ -3273,8 +3282,12 @@ function renderSchichten(rows) {
         const style = bezogen ? 'color:var(--text-dim);opacity:.6;' : '';
         return `<span style="${style}">${fmtDateSwiss(parseISODate(f.von))} – ${fmtDateSwiss(parseISODate(f.bis))} · ${escapeHtml(f.name)} (${label})</span>`;
       }).join('<br>');
-      ferienHtml = `<div class="day-header" style="border-radius:10px;margin-bottom:10px;flex-direction:column;align-items:flex-start;gap:4px;">
-        <span class="date">${ICON_FERIEN} Ferienübersicht</span><span class="span" style="font-weight:400;">${zeilen}</span>
+      // Als Dropdown: zugeklappt zeigt der Button nur den nächsten kommenden Ferienzeitraum.
+      const naechste = alle.find(f => f.bis >= heuteIso);
+      const hint = naechste ? `· ab ${fmtDateSwiss(parseISODate(naechste.von))}` : '';
+      ferienHtml = `<div style="margin-bottom:10px;">
+        <button type="button" id="btn-ferien-uebersicht-toggle" class="sel-dd-btn opt-toggle${ferienUebersichtOffen ? ' open' : ''}" aria-expanded="${ferienUebersichtOffen}" aria-controls="ferien-uebersicht-panel" onclick="toggleFerienUebersicht()">${ICON_FERIEN} Ferienübersicht <span class="opt-hint">${hint}</span><span class="sel-dd-caret" aria-hidden="true">▾</span></button>
+        <div id="ferien-uebersicht-panel" class="opt-panel${ferienUebersichtOffen ? '' : ' hidden'}" style="font-size:.88rem;"><div style="line-height:1.7;">${zeilen}</div></div>
       </div>`;
     }
   }
